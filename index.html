@@ -167,10 +167,11 @@
                 </div>
                 <div class="glass-card overflow-hidden">
                     <div class="overflow-x-auto no-scrollbar">
-                        <table class="w-full text-left min-w-[600px]">
+                        <table class="w-full text-left min-w-[700px]">
                             <thead class="bg-gray-50 border-b">
                                 <tr>
                                     <th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">Artigo</th>
+                                    <th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">Preço Custo</th>
                                     <th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">Preço Venda</th>
                                     <th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase text-center">Stock</th>
                                     <th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase text-right">Ação</th>
@@ -305,6 +306,16 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxVXjw7pHV-37ttvxSwR4NF284dm5ARtIN-tojACIRHZqqOYLvMxN6fpSUMyVxuYoK8/exec";
         let state = { products: [], customers: [], sales: [], users: [], currentUser: null };
 
+        // Função para converter valores da planilha (com vírgula ou símbolos) em números válidos para o JS
+        const parseCurrency = (val) => {
+            if (val === undefined || val === null || val === "") return 0;
+            if (typeof val === 'number') return val;
+            // Remove R$, espaços e converte vírgula para ponto (para o padrão JS)
+            let clean = String(val).replace(/R\$/g, '').replace(/\s/g, '').replace(/\./g, '').replace(',', '.');
+            let num = parseFloat(clean);
+            return isNaN(num) ? 0 : num;
+        };
+
         // --- LÓGICA DE DADOS ---
 
         const fetchData = async () => {
@@ -324,7 +335,6 @@
         const postData = async (payload) => {
             showToast("Sincronizando com a planilha...");
             try {
-                // Apps Script exige no-cors para POST simples
                 await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
                 showToast("Sucesso!");
                 setTimeout(fetchData, 1500);
@@ -359,7 +369,7 @@
             const cSel = document.getElementById('s-cust');
             
             pSel.innerHTML = '<option value="">Escolha um artigo...</option>' + 
-                state.products.map((p, i) => `<option value="${i}">${p.name} (R$ ${Number(p.price).toFixed(2)})</option>`).join('');
+                state.products.map((p, i) => `<option value="${i}">${p.name} (R$ ${parseCurrency(p.price).toFixed(2)})</option>`).join('');
             
             cSel.innerHTML = '<option value="">Cliente Ocasional</option>' + 
                 state.customers.map((c, i) => `<option value="${i}">${c.name}</option>`).join('');
@@ -374,7 +384,7 @@
                 totalEl.innerText = "R$ 0,00";
                 return;
             }
-            const total = Number(state.products[pIdx].price) * Number(qty);
+            const total = parseCurrency(state.products[pIdx].price) * Number(qty);
             totalEl.innerText = `R$ ${total.toFixed(2)}`;
         };
 
@@ -388,10 +398,10 @@
             const qty = parseInt(document.getElementById('s-qty').value);
             
             if(!prod) return;
-            if(prod.stock < qty) return alert("Estoque insuficiente!");
+            if(parseCurrency(prod.stock) < qty) return alert("Estoque insuficiente!");
 
-            const total = Number(prod.price) * qty;
-            const profit = (Number(prod.price) - Number(prod.cost)) * qty;
+            const total = parseCurrency(prod.price) * qty;
+            const profit = (parseCurrency(prod.price) - parseCurrency(prod.cost)) * qty;
 
             const data = [
                 new Date().toLocaleString('pt-BR'), 
@@ -415,10 +425,10 @@
             if(idx !== null) {
                 const p = state.products[idx];
                 document.getElementById('p-name').value = p.name;
-                document.getElementById('p-cost').value = p.cost;
-                document.getElementById('p-price').value = p.price;
-                document.getElementById('p-stock').value = p.stock;
-                document.getElementById('p-min').value = p.minStock;
+                document.getElementById('p-cost').value = parseCurrency(p.cost);
+                document.getElementById('p-price').value = parseCurrency(p.price);
+                document.getElementById('p-stock').value = parseCurrency(p.stock);
+                document.getElementById('p-min').value = parseCurrency(p.minStock);
             }
             openModal('modal-product');
         };
@@ -452,9 +462,9 @@
 
         const renderAll = () => {
             // Dashboard
-            const revenue = state.sales.reduce((a, b) => a + Number(b.total || 0), 0);
-            const profit = state.sales.reduce((a, b) => a + Number(b.profit || 0), 0);
-            const low = state.products.filter(p => Number(p.stock) <= Number(p.minStock)).length;
+            const revenue = state.sales.reduce((a, b) => a + parseCurrency(b.total || 0), 0);
+            const profit = state.sales.reduce((a, b) => a + parseCurrency(b.profit || 0), 0);
+            const low = state.products.filter(p => parseCurrency(p.stock) <= parseCurrency(p.minStock)).length;
             
             document.getElementById('dash-rev').innerText = `R$ ${revenue.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
             document.getElementById('dash-profit').innerText = `R$ ${profit.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
@@ -462,7 +472,7 @@
 
             // Stats Pagamento
             const pays = { Pix: 0, Cartão: 0, Dinheiro: 0 };
-            state.sales.forEach(s => pays[s.payment] = (pays[s.payment] || 0) + Number(s.total || 0));
+            state.sales.forEach(s => pays[s.payment] = (pays[s.payment] || 0) + parseCurrency(s.total || 0));
             document.getElementById('payment-stats').innerHTML = Object.entries(pays).map(([k,v]) => `
                 <div class="flex justify-between items-center p-4 rounded-2xl bg-gray-50 border border-gray-100">
                     <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">${k}</span>
@@ -483,15 +493,16 @@
                 </div>
             `).join('') || '<p class="text-center text-gray-300 italic text-sm">Nenhum aniversário este mês.</p>';
 
-            // Tabelas
+            // Tabelas Estoque
             document.getElementById('inv-list').innerHTML = state.products.map((p, i) => `
                 <tr class="hover:bg-gray-50/50">
                     <td class="px-8 py-5 font-bold text-gray-700 text-sm">${p.name}</td>
-                    <td class="px-8 py-5 font-serif italic text-vinho">R$ ${Number(p.price).toFixed(2)}</td>
-                    <td class="px-8 py-5 text-center ${Number(p.stock) <= Number(p.minStock) ? 'text-red-500 font-bold' : 'text-gray-500'}">${p.stock}</td>
+                    <td class="px-8 py-5 text-gray-400 text-xs font-mono">R$ ${parseCurrency(p.cost).toFixed(2)}</td>
+                    <td class="px-8 py-5 font-serif italic text-vinho">R$ ${parseCurrency(p.price).toFixed(2)}</td>
+                    <td class="px-8 py-5 text-center ${parseCurrency(p.stock) <= parseCurrency(p.minStock) ? 'text-red-500 font-bold' : 'text-gray-500'}">${p.stock}</td>
                     <td class="px-8 py-5 text-right flex justify-end gap-3">
-                        <button onclick="openProductModal(${i})" class="text-gray-200 hover:text-vinho"><i data-lucide="edit" class="w-4 h-4"></i></button>
-                        <button onclick="deleteRow('Estoque', ${i+1})" class="text-gray-100 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        <button onclick="openProductModal(${i})" class="text-gray-200 hover:text-vinho transition-colors"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                        <button onclick="deleteRow('Estoque', ${i+1})" class="text-gray-100 hover:text-red-500 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </td>
                 </tr>
             `).join('');
@@ -509,7 +520,7 @@
                     <td class="px-8 py-5 text-[10px] text-gray-300 font-mono">${s.date}</td>
                     <td class="px-8 py-5 text-sm font-bold text-gray-800">${s.product}</td>
                     <td class="px-8 py-5 text-xs text-gray-400 font-bold">${s.customer}</td>
-                    <td class="px-8 py-5 text-right font-serif italic text-vinho text-lg font-bold">R$ ${Number(s.total).toFixed(2)}</td>
+                    <td class="px-8 py-5 text-right font-serif italic text-vinho text-lg font-bold">R$ ${parseCurrency(s.total).toFixed(2)}</td>
                 </tr>
             `).join('');
             
