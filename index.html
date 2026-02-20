@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Amora - Boutique Management</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
+
+    <style>
+        :root { 
+            --vinho: #611624; 
+            --vinho-light: #fdf2f4; 
+            --vinho-hover: #4a101b; 
+            --transition-smooth: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #fdfbfc; 
+            color: #1a1a1a;
+            overflow-x: hidden;
+        }
+
+        .font-serif { font-family: 'Playfair Display', serif; }
+        .text-vinho { color: var(--vinho); }
+        .bg-vinho { background-color: var(--vinho); }
+
+        /* Animação da Logo */
+        @keyframes heartBeat {
+            0% { transform: rotate(12deg) scale(1); }
+            14% { transform: rotate(12deg) scale(1.3); }
+            28% { transform: rotate(12deg) scale(1); }
+            42% { transform: rotate(12deg) scale(1.3); }
+            70% { transform: rotate(12deg) scale(1); }
+        }
+        .logo-heart { 
+            display: inline-block; 
+            width: 14px; height: 14px; 
+            background-color: currentColor; 
+            clip-path: path('M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'); 
+            margin-left: 2px; 
+            transform: rotate(12deg);
+            animation: heartBeat 2s infinite;
+        }
+
+        /* Transições de Views */
+        .view-enter {
+            animation: viewSlideUp 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+        }
+        @keyframes viewSlideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Glassmorphism & Cards */
+        .glass-card { 
+            background: white; 
+            border: 1px solid rgba(97, 22, 36, 0.05); 
+            border-radius: 28px;
+            transition: var(--transition-smooth);
+        }
+        .glass-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(97, 22, 36, 0.08);
+        }
+
+        .btn-primary { 
+            background-color: var(--vinho); 
+            color: white; 
+            transition: var(--transition-smooth);
+            box-shadow: 0 4px 15px rgba(97, 22, 36, 0.2);
+        }
+        .btn-primary:hover {
+            background-color: var(--vinho-hover);
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(97, 22, 36, 0.3);
+        }
+        .btn-primary:active { transform: scale(0.96); }
+
+        .nav-link { transition: var(--transition-smooth); position: relative; }
+        .nav-link.active { background: var(--vinho-light); color: var(--vinho); font-weight: 600; }
+        .nav-link.active::after {
+            content: ''; position: absolute; left: 0; top: 25%; bottom: 25%; width: 4px; 
+            background: var(--vinho); border-radius: 0 4px 4px 0;
+        }
+
+        /* Modal Overlay Animation */
+        #modal-container { transition: opacity 0.3s ease; }
+        .modal-box { transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease; }
+
+        @media (max-width: 768px) {
+            .bottom-nav { box-shadow: 0 -10px 30px rgba(0,0,0,0.05); border-radius: 24px 24px 0 0; }
+            .nav-link.active::after { display: none; }
+        }
+
+        /* Custom Input focus */
+        input:focus, select:focus, textarea:focus {
+            ring: 2px; ring-color: var(--vinho); border-color: var(--vinho);
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="overflow-x-hidden">
+
+    <!-- Auth Screen -->
+    <div id="auth-screen" class="fixed inset-0 z-[100] bg-[#fdfbfc] flex items-center justify-center p-6 transition-opacity duration-700">
+        <div class="w-full max-w-sm text-center">
+            <h1 class="text-7xl font-serif text-vinho mb-12 italic">amora<span class="logo-heart"></span></h1>
+            <div class="glass-card p-10 shadow-2xl border border-gray-50">
+                <form id="login-form" class="space-y-6">
+                    <p class="text-xs uppercase tracking-widest text-gray-400 font-bold mb-2">Acesso Restrito</p>
+                    <input type="password" id="auth-pass" placeholder="Digite sua senha" class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-vinho/20 text-center text-lg transition-all">
+                    <button type="submit" class="w-full btn-primary py-4 rounded-2xl font-bold text-lg shadow-xl">Entrar no Painel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="app-content" class="hidden flex flex-col md:flex-row min-h-screen opacity-0 transition-opacity duration-1000">
+        
+        <!-- Sidebar Navigation -->
+        <nav class="fixed bottom-0 left-0 right-0 md:static md:w-72 bg-white md:bg-transparent z-40 p-3 md:p-8 flex flex-row md:flex-col gap-2 md:h-screen border-t md:border-r border-gray-50 bottom-nav">
+            <div class="hidden md:block mb-14 px-4">
+                <h1 class="text-4xl font-serif text-vinho italic">amora<span class="logo-heart"></span></h1>
+                <p class="text-[10px] uppercase tracking-[0.4em] text-gray-400 mt-2">Boutique Erótica</p>
+            </div>
+            
+            <button onclick="showTab('dashboard')" class="nav-link active flex-1 md:flex-none flex flex-col md:flex-row items-center gap-2 md:gap-5 p-3 md:px-6 md:py-5 rounded-2xl" id="tab-dashboard">
+                <i data-lucide="layout-grid" class="w-6 h-6 md:w-5 md:h-5"></i> 
+                <span class="text-[10px] md:text-sm font-medium">Dashboard</span>
+            </button>
+            <button onclick="showTab('inventory')" class="nav-link flex-1 md:flex-none flex flex-col md:flex-row items-center gap-2 md:gap-5 p-3 md:px-6 md:py-5 rounded-2xl" id="tab-inventory">
+                <i data-lucide="package" class="w-6 h-6 md:w-5 md:h-5"></i> 
+                <span class="text-[10px] md:text-sm font-medium">Estoque</span>
+            </button>
+            <button onclick="showTab('customers')" class="nav-link flex-1 md:flex-none flex flex-col md:flex-row items-center gap-2 md:gap-5 p-3 md:px-6 md:py-5 rounded-2xl" id="tab-customers">
+                <i data-lucide="users" class="w-6 h-6 md:w-5 md:h-5"></i> 
+                <span class="text-[10px] md:text-sm font-medium">Clientes</span>
+            </button>
+            <button onclick="showTab('sales')" class="nav-link flex-1 md:flex-none flex flex-col md:flex-row items-center gap-2 md:gap-5 p-3 md:px-6 md:py-5 rounded-2xl" id="tab-sales">
+                <i data-lucide="receipt" class="w-6 h-6 md:w-5 md:h-5"></i> 
+                <span class="text-[10px] md:text-sm font-medium">Vendas</span>
+            </button>
+        </nav>
+
+        <!-- Main Workspace -->
+        <main class="flex-1 p-5 md:p-12 pb-28 md:pb-12 overflow-y-auto">
+            <header class="flex justify-between items-center mb-10">
+                <div class="animate-enter">
+                    <h2 id="page-title" class="text-4xl font-serif italic text-gray-800">Dashboard</h2>
+                    <p class="text-gray-400 text-sm mt-1">Bem-vinda de volta, Amora Shop.</p>
+                </div>
+                <button onclick="openModal('modal-sale')" class="btn-primary px-8 py-3.5 rounded-full text-sm font-bold shadow-2xl flex items-center gap-3">
+                    <i data-lucide="plus" class="w-5 h-5"></i> Registrar Venda
+                </button>
+            </header>
+
+            <!-- VIEW: DASHBOARD -->
+            <div id="view-dashboard" class="tab-view view-enter space-y-8">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
+                    <div class="glass-card p-8 bg-white/60">
+                        <p class="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-2">Faturamento Total</p>
+                        <h3 id="dash-rev" class="text-4xl font-serif text-vinho italic">R$ 0,00</h3>
+                    </div>
+                    <div class="glass-card p-8 bg-white/60">
+                        <p class="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-2">Lucro Líquido</p>
+                        <h3 id="dash-profit" class="text-4xl font-serif text-green-600 italic">R$ 0,00</h3>
+                    </div>
+                    <div class="glass-card p-8 bg-white/60">
+                        <p class="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-2">Reposição Pendente</p>
+                        <h3 id="dash-low" class="text-4xl font-serif text-red-500 italic">0</h3>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="glass-card p-8">
+                        <div class="flex items-center gap-3 mb-6">
+                            <i data-lucide="wallet" class="text-vinho w-5 h-5"></i>
+                            <h4 class="font-serif text-xl italic">Fluxo de Caixa</h4>
+                        </div>
+                        <div id="payment-stats" class="space-y-4"></div>
+                    </div>
+                    <div class="glass-card p-8">
+                        <div class="flex items-center gap-3 mb-6">
+                            <i data-lucide="cake" class="text-vinho w-5 h-5"></i>
+                            <h4 class="font-serif text-xl italic">Aniversariantes do Mês</h4>
+                        </div>
+                        <div id="bday-list" class="space-y-4"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: INVENTORY -->
+            <div id="view-inventory" class="tab-view hidden view-enter space-y-8">
+                <div class="flex flex-col md:flex-row justify-between gap-6">
+                    <div class="relative w-full md:max-w-md">
+                        <i data-lucide="search" class="absolute left-5 top-4 w-5 h-5 text-gray-300"></i>
+                        <input type="text" oninput="searchTable('inv-list', this.value)" placeholder="Filtrar por nome ou categoria..." class="w-full pl-14 pr-6 py-4 bg-white border border-gray-100 rounded-2xl outline-none shadow-sm focus:shadow-md">
+                    </div>
+                    <button onclick="openProductModal()" class="btn-primary px-10 py-4 rounded-2xl font-bold flex items-center justify-center gap-3">
+                        <i data-lucide="plus-circle" class="w-6 h-6"></i> Adicionar Artigo
+                    </button>
+                </div>
+                <div class="glass-card overflow-x-auto no-scrollbar">
+                    <table class="w-full text-left min-w-[700px]">
+                        <thead class="bg-gray-50/50 border-b border-gray-100">
+                            <tr>
+                                <th class="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Peça / Artigo</th>
+                                <th class="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Custo</th>
+                                <th class="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Venda</th>
+                                <th class="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Estoque</th>
+                                <th class="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inv-list" class="divide-y divide-gray-50"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- VIEW: CUSTOMERS -->
+            <div id="view-customers" class="tab-view hidden view-enter space-y-8">
+                <div class="flex flex-col md:flex-row justify-between gap-6">
+                    <div class="relative w-full md:max-w-md">
+                        <i data-lucide="search" class="absolute left-5 top-4 w-5 h-5 text-gray-300"></i>
+                        <input type="text" oninput="searchTable('cust-list', this.value)" placeholder="Buscar cliente ou telemóvel..." class="w-full pl-14 pr-6 py-4 bg-white border border-gray-100 rounded-2xl outline-none shadow-sm">
+                    </div>
+                    <button onclick="openModal('modal-customer')" class="btn-primary px-10 py-4 rounded-2xl font-bold flex items-center justify-center gap-3">
+                        <i data-lucide="user-plus" class="w-6 h-6"></i> Novo Cliente
+                    </button>
+                </div>
+                <div class="glass-card overflow-x-auto no-scrollbar">
+                    <table class="w-full text-left min-w-[600px]">
+                        <thead class="bg-gray-50 border-b border-gray-100">
+                            <tr>
+                                <th class="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Nome Completo</th>
+                                <th class="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">WhatsApp</th>
+                                <th class="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Aniversário</th>
+                                <th class="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cust-list" class="divide-y divide-gray-50"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- VIEW: SALES -->
+            <div id="view-sales" class="tab-view hidden view-enter space-y-8">
+                <div class="glass-card overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50 border-b border-gray-100">
+                            <tr>
+                                <th class="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Data</th>
+                                <th class="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Histórico da Transação</th>
+                                <th class="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Pagamento</th>
+                                <th class="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sale-history" class="divide-y divide-gray-50"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL BACKDROP -->
+    <div id="modal-container" class="hidden fixed inset-0 z-[60] bg-vinho/20 backdrop-blur-md flex items-center justify-center p-4 opacity-0 transition-all duration-300">
+        
+        <!-- Product Modal -->
+        <div id="modal-product" class="modal-box hidden opacity-0 scale-90 bg-white w-full max-w-lg rounded-[40px] p-10 shadow-[0_30px_100px_rgba(0,0,0,0.2)]">
+            <h3 class="text-3xl font-serif italic text-vinho mb-8">Gestão de Artigo</h3>
+            <form id="form-product" class="space-y-5">
+                <input type="hidden" id="p-id">
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2 tracking-widest">Nome Comercial</label>
+                    <input type="text" id="p-name" placeholder="Ex: Conjunto Lingerie Rubi" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100 focus:bg-white">
+                </div>
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-gray-400 uppercase ml-2 tracking-widest">Preço Custo (R$)</label>
+                        <input type="number" step="0.01" id="p-cost" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100 focus:bg-white">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-gray-400 uppercase ml-2 tracking-widest">Preço Venda (R$)</label>
+                        <input type="number" step="0.01" id="p-price" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100 focus:bg-white">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-gray-400 uppercase ml-2 tracking-widest">Stock Inicial</label>
+                        <input type="number" id="p-stock" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100 focus:bg-white">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-gray-400 uppercase ml-2 tracking-widest">Aviso Crítico</label>
+                        <input type="number" id="p-min" value="3" class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100 focus:bg-white">
+                    </div>
+                </div>
+                <div class="flex gap-4 pt-6">
+                    <button type="button" onclick="closeModal()" class="flex-1 py-4 text-gray-400 font-bold hover:text-gray-600 transition-colors">Voltar</button>
+                    <button type="submit" class="flex-2 w-full btn-primary py-5 rounded-2xl font-bold text-lg shadow-xl">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Sale Modal -->
+        <div id="modal-sale" class="modal-box hidden opacity-0 scale-90 bg-white w-full max-w-lg rounded-[40px] p-10 shadow-[0_30px_100px_rgba(0,0,0,0.2)]">
+            <h3 class="text-3xl font-serif italic text-vinho mb-8">Efetuar Venda</h3>
+            <form id="form-sale" class="space-y-6">
+                <div class="space-y-4">
+                    <select id="s-prod" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100"></select>
+                    <select id="s-cust" class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100">
+                        <option value="">Cliente Ocasional</option>
+                    </select>
+                    <div class="grid grid-cols-2 gap-4">
+                        <select id="s-pay" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100">
+                            <option value="Pix">Pix</option>
+                            <option value="Cartão">Cartão</option>
+                            <option value="Dinheiro">Dinheiro</option>
+                        </select>
+                        <input type="number" id="s-qty" value="1" min="1" class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100 text-center font-bold">
+                    </div>
+                    <textarea id="s-note" placeholder="Instruções Especiais (Ex: Embalagem discreta)" class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100 text-sm h-28 resize-none"></textarea>
+                </div>
+                <div class="bg-vinho-light p-6 rounded-3xl flex justify-between items-center animate-pulse">
+                    <span class="text-sm font-bold text-vinho uppercase tracking-widest">Total a Receber</span>
+                    <span id="s-total-view" class="text-3xl font-serif italic text-vinho">R$ 0,00</span>
+                </div>
+                <button type="submit" class="w-full btn-primary py-5 rounded-2xl font-bold text-xl shadow-2xl">Confirmar Pagamento</button>
+                <button type="button" onclick="closeModal()" class="w-full text-gray-400 font-medium">Cancelar</button>
+            </form>
+        </div>
+
+        <!-- Customer Modal -->
+        <div id="modal-customer" class="modal-box hidden opacity-0 scale-90 bg-white w-full max-w-lg rounded-[40px] p-10 shadow-[0_30px_100px_rgba(0,0,0,0.2)]">
+            <h3 class="text-3xl font-serif italic text-vinho mb-8">Novo Membro Amora</h3>
+            <form id="form-customer" class="space-y-5">
+                <input type="text" id="c-name" placeholder="Nome Completo" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100 outline-none">
+                <input type="text" id="c-phone" placeholder="WhatsApp (DDD + Número)" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100 outline-none">
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2 tracking-widest">Data de Nascimento</label>
+                    <input type="date" id="c-birth" class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100 outline-none">
+                </div>
+                <button type="submit" class="w-full btn-primary py-5 rounded-2xl font-bold text-lg mt-4 shadow-xl">Salvar Cadastro</button>
+                <button type="button" onclick="closeModal()" class="w-full text-gray-400 font-medium">Fechar</button>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, Timestamp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'amora-luxury-v4';
+
+        let state = { user: null, products: [], customers: [], sales: [] };
+
+        const init = async () => {
+            lucide.createIcons();
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
+            else await signInAnonymously(auth);
+
+            onAuthStateChanged(auth, (u) => {
+                if (u) {
+                    state.user = u;
+                    setupAuth();
+                }
+            });
+        };
+
+        const setupAuth = () => {
+            document.getElementById('login-form').onsubmit = (e) => {
+                e.preventDefault();
+                const scr = document.getElementById('auth-screen');
+                const app = document.getElementById('app-content');
+                scr.style.opacity = '0';
+                setTimeout(() => {
+                    scr.classList.add('hidden');
+                    app.classList.remove('hidden');
+                    setTimeout(() => app.style.opacity = '1', 50);
+                    startSync();
+                }, 700);
+            };
+        };
+
+        const startSync = () => {
+            const coll = (n) => collection(db, 'artifacts', appId, 'public', 'data', n);
+            onSnapshot(coll('products'), snap => { state.products = snap.docs.map(d => ({id: d.id, ...d.data()})); renderAll(); });
+            onSnapshot(coll('customers'), snap => { state.customers = snap.docs.map(d => ({id: d.id, ...d.data()})); renderAll(); });
+            onSnapshot(coll('sales'), snap => { state.sales = snap.docs.map(d => ({id: d.id, ...d.data()})); renderAll(); });
+        };
+
+        // UI & Modal Logic
+        window.showTab = (id) => {
+            document.querySelectorAll('.tab-view').forEach(v => {
+                v.classList.add('hidden');
+                v.classList.remove('view-enter');
+            });
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            
+            const tab = document.getElementById(`view-${id}`);
+            tab.classList.remove('hidden');
+            setTimeout(() => tab.classList.add('view-enter'), 10);
+            
+            document.getElementById(`tab-${id}`).classList.add('active');
+            const titles = { dashboard: 'Dashboard', inventory: 'Estoque', customers: 'Clientes', sales: 'Vendas' };
+            document.getElementById('page-title').innerText = titles[id];
+            lucide.createIcons();
+        };
+
+        window.openModal = (id) => {
+            const container = document.getElementById('modal-container');
+            const box = document.getElementById(id);
+            container.classList.remove('hidden');
+            box.classList.remove('hidden');
+            setTimeout(() => {
+                container.classList.add('opacity-100');
+                box.classList.remove('opacity-0', 'scale-90');
+                box.classList.add('opacity-100', 'scale-100');
+            }, 10);
+            if(id === 'modal-sale') updateSaleSelects();
+        };
+
+        window.closeModal = () => {
+            const container = document.getElementById('modal-container');
+            const boxes = document.querySelectorAll('.modal-box');
+            container.classList.remove('opacity-100');
+            boxes.forEach(b => {
+                b.classList.add('opacity-0', 'scale-90');
+                b.classList.remove('opacity-100', 'scale-100');
+            });
+            setTimeout(() => {
+                container.classList.add('hidden');
+                boxes.forEach(b => b.classList.add('hidden'));
+            }, 300);
+        };
+
+        // Business Logic - Forms
+        window.openProductModal = (id = null) => {
+            const form = document.getElementById('form-product');
+            form.reset();
+            document.getElementById('p-id').value = id || '';
+            if(id) {
+                const p = state.products.find(x => x.id === id);
+                document.getElementById('p-name').value = p.name;
+                document.getElementById('p-cost').value = p.cost;
+                document.getElementById('p-price').value = p.price;
+                document.getElementById('p-stock').value = p.stock;
+                document.getElementById('p-min').value = p.minStock;
+            }
+            openModal('modal-product');
+        };
+
+        document.getElementById('form-product').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('p-id').value;
+            const data = {
+                name: document.getElementById('p-name').value,
+                cost: parseFloat(document.getElementById('p-cost').value),
+                price: parseFloat(document.getElementById('p-price').value),
+                stock: parseInt(document.getElementById('p-stock').value),
+                minStock: parseInt(document.getElementById('p-min').value)
+            };
+            if(id) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id), data);
+            else await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'products'), data);
+            closeModal();
+        };
+
+        const updateSaleSelects = () => {
+            document.getElementById('s-prod').innerHTML = '<option value="">Escolher Produto...</option>' + 
+                state.products.map(p => `<option value="${p.id}" data-price="${p.price}">${p.name} (R$ ${p.price})</option>`).join('');
+            document.getElementById('s-cust').innerHTML = '<option value="">Cliente Ocasional</option>' + 
+                state.customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        };
+
+        const calcTotal = () => {
+            const pId = document.getElementById('s-prod').value;
+            const qty = document.getElementById('s-qty').value;
+            const prod = state.products.find(x => x.id === pId);
+            document.getElementById('s-total-view').innerText = `R$ ${(prod ? prod.price * qty : 0).toFixed(2)}`;
+        };
+        document.getElementById('s-prod').onchange = calcTotal;
+        document.getElementById('s-qty').oninput = calcTotal;
+
+        document.getElementById('form-sale').onsubmit = async (e) => {
+            e.preventDefault();
+            const pId = document.getElementById('s-prod').value;
+            const cId = document.getElementById('s-cust').value;
+            const qty = parseInt(document.getElementById('s-qty').value);
+            const pay = document.getElementById('s-pay').value;
+            const product = state.products.find(x => x.id === pId);
+            const customer = state.customers.find(x => x.id === cId);
+
+            if(!product || product.stock < qty) return alert("Estoque Insuficiente!");
+
+            const sale = {
+                productName: product.name,
+                productId: pId,
+                customerName: customer ? customer.name : 'Ocasional',
+                total: product.price * qty,
+                profit: (product.price - product.cost) * qty,
+                payment: pay,
+                note: document.getElementById('s-note').value,
+                date: Timestamp.now()
+            };
+
+            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'sales'), sale);
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', pId), { stock: product.stock - qty });
+            closeModal();
+        };
+
+        document.getElementById('form-customer').onsubmit = async (e) => {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('c-name').value,
+                phone: document.getElementById('c-phone').value,
+                birth: document.getElementById('c-birth').value
+            };
+            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'customers'), data);
+            closeModal();
+        };
+
+        // Render Functions
+        const renderAll = () => {
+            // Dashboard Calculations
+            const revenue = state.sales.reduce((a, b) => a + b.total, 0);
+            const profit = state.sales.reduce((a, b) => a + (b.profit || 0), 0);
+            const low = state.products.filter(p => p.stock <= p.minStock).length;
+            
+            document.getElementById('dash-rev').innerText = `R$ ${revenue.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('dash-profit').innerText = `R$ ${profit.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('dash-low').innerText = low;
+
+            // Stats por pagamento
+            const pays = { Pix: 0, Cartão: 0, Dinheiro: 0 };
+            state.sales.forEach(s => pays[s.payment] = (pays[s.payment] || 0) + s.total);
+            document.getElementById('payment-stats').innerHTML = Object.entries(pays).map(([k,v]) => `
+                <div class="flex justify-between items-center p-4 rounded-2xl bg-gray-50 border border-gray-100 hover:scale-[1.02] transition-transform">
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">${k}</span>
+                    <span class="font-serif italic text-vinho font-bold">R$ ${v.toFixed(2)}</span>
+                </div>
+            `).join('');
+
+            // Birthdays
+            const month = new Date().getMonth();
+            const bdays = state.customers.filter(c => c.birth && new Date(c.birth).getUTCMonth() === month);
+            document.getElementById('bday-list').innerHTML = bdays.length ? bdays.map(c => `
+                <div class="flex justify-between items-center p-4 bg-vinho-light rounded-2xl group overflow-hidden">
+                    <span class="text-sm font-semibold text-gray-700">${c.name}</span>
+                    <a href="https://wa.me/55${c.phone.replace(/\D/g,'')}" target="_blank" class="px-5 py-2 bg-vinho text-white rounded-full text-[10px] font-bold shadow-lg hover:scale-110 transition-transform">Mimo</a>
+                </div>
+            `).join('') : '<p class="text-center text-gray-300 italic text-sm py-4">Nenhum este mês.</p>';
+
+            // Tables
+            document.getElementById('inv-list').innerHTML = state.products.map(p => `
+                <tr class="hover:bg-gray-50/50 transition-colors">
+                    <td class="px-8 py-5 font-bold text-gray-700 text-sm">${p.name}</td>
+                    <td class="px-8 py-5 text-[11px] text-gray-400">R$ ${p.cost.toFixed(2)}</td>
+                    <td class="px-8 py-5 font-serif italic font-bold text-vinho">R$ ${p.price.toFixed(2)}</td>
+                    <td class="px-8 py-5 text-center"><span class="${p.stock <= p.minStock ? 'text-red-500 font-bold' : 'text-gray-500'}">${p.stock}</span></td>
+                    <td class="px-8 py-5 text-right"><button onclick="openProductModal('${p.id}')" class="text-gray-200 hover:text-vinho transition-colors"><i data-lucide="pencil" class="w-4 h-4"></i></button></td>
+                </tr>
+            `).join('');
+
+            document.getElementById('cust-list').innerHTML = state.customers.map(c => `
+                <tr class="hover:bg-gray-50/50 transition-colors">
+                    <td class="px-8 py-5 font-bold text-sm text-gray-700">${c.name}</td>
+                    <td class="px-8 py-5"><a href="https://wa.me/55${c.phone.replace(/\D/g,'')}" target="_blank" class="text-xs text-vinho font-bold hover:underline">WhatsApp</a></td>
+                    <td class="px-8 py-5 text-xs text-gray-500">${c.birth ? new Date(c.birth).toLocaleDateString('pt-BR') : '--'}</td>
+                    <td class="px-8 py-5 text-right"><button onclick="deleteDoc(doc(db, 'artifacts', '${appId}', 'public', 'data', 'customers', '${c.id}'))" class="text-gray-100 hover:text-red-500"><i data-lucide="user-minus" class="w-4 h-4"></i></button></td>
+                </tr>
+            `).join('');
+
+            const sortedSales = [...state.sales].sort((a,b) => b.date.toMillis() - a.date.toMillis());
+            document.getElementById('sale-history').innerHTML = sortedSales.map(s => `
+                <tr class="group hover:bg-vinho-light/30 transition-colors">
+                    <td class="px-8 py-5 text-xs text-gray-300 font-mono">${s.date.toDate().toLocaleDateString('pt-BR')}</td>
+                    <td class="px-8 py-5">
+                        <div class="font-bold text-sm text-gray-800">${s.productName}</div>
+                        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">${s.customerName}</div>
+                        ${s.note ? `<div class="text-[10px] text-vinho italic mt-1 font-medium bg-white/50 px-2 py-0.5 rounded-full inline-block">Obs: ${s.note}</div>` : ''}
+                    </td>
+                    <td class="px-8 py-5"><span class="text-[10px] font-bold text-gray-400 uppercase">${s.payment}</span></td>
+                    <td class="px-8 py-5 text-right font-serif italic font-bold text-vinho text-lg">R$ ${s.total.toFixed(2)}</td>
+                </tr>
+            `).join('');
+
+            lucide.createIcons();
+        };
+
+        window.searchTable = (id, val) => {
+            const rows = document.getElementById(id).getElementsByTagName('tr');
+            for (let r of rows) r.style.display = r.innerText.toLowerCase().includes(val.toLowerCase()) ? '' : 'none';
+        };
+
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
