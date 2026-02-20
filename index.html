@@ -96,7 +96,10 @@
             .nav-link.active::after { display: none; }
         }
 
-        /* Custom Input focus */
+        /* Syncing Animation */
+        .syncing { animation: spin 2s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
         input:focus, select:focus, textarea:focus {
             ring: 2px; ring-color: var(--vinho); border-color: var(--vinho);
             transition: all 0.3s ease;
@@ -112,7 +115,7 @@
             <div class="glass-card p-10 shadow-2xl border border-gray-50">
                 <form id="login-form" class="space-y-6">
                     <p class="text-xs uppercase tracking-widest text-gray-400 font-bold mb-2">Acesso Restrito</p>
-                    <input type="password" id="auth-pass" placeholder="Digite sua senha" class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-vinho/20 text-center text-lg transition-all">
+                    <input type="password" id="auth-pass" placeholder="Senha da Boutique" class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-vinho/20 text-center text-lg transition-all">
                     <button type="submit" class="w-full btn-primary py-4 rounded-2xl font-bold text-lg shadow-xl">Entrar no Painel</button>
                 </form>
             </div>
@@ -152,7 +155,10 @@
             <header class="flex justify-between items-center mb-10">
                 <div class="animate-enter">
                     <h2 id="page-title" class="text-4xl font-serif italic text-gray-800">Dashboard</h2>
-                    <p class="text-gray-400 text-sm mt-1">Bem-vinda de volta, Amora Shop.</p>
+                    <div id="sync-indicator" class="text-[10px] uppercase font-bold text-gray-400 flex items-center gap-2 mt-1">
+                        <i data-lucide="refresh-cw" id="sync-icon" class="w-3 h-3"></i>
+                        <span id="sync-text">Sincronizado</span>
+                    </div>
                 </div>
                 <button onclick="openModal('modal-sale')" class="btn-primary px-8 py-3.5 rounded-full text-sm font-bold shadow-2xl flex items-center gap-3">
                     <i data-lucide="plus" class="w-5 h-5"></i> Registrar Venda
@@ -199,7 +205,7 @@
                 <div class="flex flex-col md:flex-row justify-between gap-6">
                     <div class="relative w-full md:max-w-md">
                         <i data-lucide="search" class="absolute left-5 top-4 w-5 h-5 text-gray-300"></i>
-                        <input type="text" oninput="searchTable('inv-list', this.value)" placeholder="Filtrar por nome ou categoria..." class="w-full pl-14 pr-6 py-4 bg-white border border-gray-100 rounded-2xl outline-none shadow-sm focus:shadow-md">
+                        <input type="text" oninput="searchTable('inv-list', this.value)" placeholder="Filtrar por nome..." class="w-full pl-14 pr-6 py-4 bg-white border border-gray-100 rounded-2xl outline-none shadow-sm focus:shadow-md">
                     </div>
                     <button onclick="openProductModal()" class="btn-primary px-10 py-4 rounded-2xl font-bold flex items-center justify-center gap-3">
                         <i data-lucide="plus-circle" class="w-6 h-6"></i> Adicionar Artigo
@@ -226,7 +232,7 @@
                 <div class="flex flex-col md:flex-row justify-between gap-6">
                     <div class="relative w-full md:max-w-md">
                         <i data-lucide="search" class="absolute left-5 top-4 w-5 h-5 text-gray-300"></i>
-                        <input type="text" oninput="searchTable('cust-list', this.value)" placeholder="Buscar cliente ou telemóvel..." class="w-full pl-14 pr-6 py-4 bg-white border border-gray-100 rounded-2xl outline-none shadow-sm">
+                        <input type="text" oninput="searchTable('cust-list', this.value)" placeholder="Buscar cliente..." class="w-full pl-14 pr-6 py-4 bg-white border border-gray-100 rounded-2xl outline-none shadow-sm">
                     </div>
                     <button onclick="openModal('modal-customer')" class="btn-primary px-10 py-4 rounded-2xl font-bold flex items-center justify-center gap-3">
                         <i data-lucide="user-plus" class="w-6 h-6"></i> Novo Cliente
@@ -254,7 +260,7 @@
                         <thead class="bg-gray-50 border-b border-gray-100">
                             <tr>
                                 <th class="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Data</th>
-                                <th class="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Histórico da Transação</th>
+                                <th class="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Histórico</th>
                                 <th class="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Pagamento</th>
                                 <th class="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right">Total</th>
                             </tr>
@@ -266,140 +272,116 @@
         </main>
     </div>
 
-    <!-- MODAL BACKDROP -->
+    <!-- MODAL CONTAINER -->
     <div id="modal-container" class="hidden fixed inset-0 z-[60] bg-vinho/20 backdrop-blur-md flex items-center justify-center p-4 opacity-0 transition-all duration-300">
         
         <!-- Product Modal -->
-        <div id="modal-product" class="modal-box hidden opacity-0 scale-90 bg-white w-full max-w-lg rounded-[40px] p-10 shadow-[0_30px_100px_rgba(0,0,0,0.2)]">
+        <div id="modal-product" class="modal-box hidden opacity-0 scale-90 bg-white w-full max-w-lg rounded-[40px] p-10 shadow-2xl">
             <h3 class="text-3xl font-serif italic text-vinho mb-8">Gestão de Artigo</h3>
             <form id="form-product" class="space-y-5">
                 <input type="hidden" id="p-id">
                 <div class="space-y-2">
                     <label class="text-[10px] font-bold text-gray-400 uppercase ml-2 tracking-widest">Nome Comercial</label>
-                    <input type="text" id="p-name" placeholder="Ex: Conjunto Lingerie Rubi" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100 focus:bg-white">
+                    <input type="text" id="p-name" placeholder="Ex: Lingerie de Renda" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100">
                 </div>
                 <div class="grid grid-cols-2 gap-6">
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-bold text-gray-400 uppercase ml-2 tracking-widest">Preço Custo (R$)</label>
-                        <input type="number" step="0.01" id="p-cost" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100 focus:bg-white">
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-bold text-gray-400 uppercase ml-2 tracking-widest">Preço Venda (R$)</label>
-                        <input type="number" step="0.01" id="p-price" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100 focus:bg-white">
-                    </div>
+                    <input type="number" step="0.01" id="p-cost" placeholder="Custo R$" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none">
+                    <input type="number" step="0.01" id="p-price" placeholder="Venda R$" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none">
                 </div>
                 <div class="grid grid-cols-2 gap-6">
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-bold text-gray-400 uppercase ml-2 tracking-widest">Stock Inicial</label>
-                        <input type="number" id="p-stock" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100 focus:bg-white">
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-bold text-gray-400 uppercase ml-2 tracking-widest">Aviso Crítico</label>
-                        <input type="number" id="p-min" value="3" class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100 focus:bg-white">
-                    </div>
+                    <input type="number" id="p-stock" placeholder="Qtd." required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none">
+                    <input type="number" id="p-min" placeholder="Mínimo" value="3" class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none">
                 </div>
-                <div class="flex gap-4 pt-6">
-                    <button type="button" onclick="closeModal()" class="flex-1 py-4 text-gray-400 font-bold hover:text-gray-600 transition-colors">Voltar</button>
-                    <button type="submit" class="flex-2 w-full btn-primary py-5 rounded-2xl font-bold text-lg shadow-xl">Salvar Alterações</button>
-                </div>
+                <button type="submit" class="w-full btn-primary py-5 rounded-2xl font-bold">Salvar na Planilha</button>
+                <button type="button" onclick="closeModal()" class="w-full text-gray-400 font-medium pt-2">Voltar</button>
             </form>
         </div>
 
         <!-- Sale Modal -->
-        <div id="modal-sale" class="modal-box hidden opacity-0 scale-90 bg-white w-full max-w-lg rounded-[40px] p-10 shadow-[0_30px_100px_rgba(0,0,0,0.2)]">
+        <div id="modal-sale" class="modal-box hidden opacity-0 scale-90 bg-white w-full max-w-lg rounded-[40px] p-10 shadow-2xl">
             <h3 class="text-3xl font-serif italic text-vinho mb-8">Efetuar Venda</h3>
             <form id="form-sale" class="space-y-6">
-                <div class="space-y-4">
-                    <select id="s-prod" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100"></select>
-                    <select id="s-cust" class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100">
-                        <option value="">Cliente Ocasional</option>
+                <select id="s-prod" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100"></select>
+                <select id="s-cust" class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100">
+                    <option value="">Cliente Ocasional</option>
+                </select>
+                <div class="grid grid-cols-2 gap-4">
+                    <select id="s-pay" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none">
+                        <option value="Pix">Pix</option>
+                        <option value="Cartão">Cartão</option>
+                        <option value="Dinheiro">Dinheiro</option>
                     </select>
-                    <div class="grid grid-cols-2 gap-4">
-                        <select id="s-pay" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100">
-                            <option value="Pix">Pix</option>
-                            <option value="Cartão">Cartão</option>
-                            <option value="Dinheiro">Dinheiro</option>
-                        </select>
-                        <input type="number" id="s-qty" value="1" min="1" class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100 text-center font-bold">
-                    </div>
-                    <textarea id="s-note" placeholder="Instruções Especiais (Ex: Embalagem discreta)" class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100 text-sm h-28 resize-none"></textarea>
+                    <input type="number" id="s-qty" value="1" min="1" class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none text-center font-bold">
                 </div>
-                <div class="bg-vinho-light p-6 rounded-3xl flex justify-between items-center animate-pulse">
-                    <span class="text-sm font-bold text-vinho uppercase tracking-widest">Total a Receber</span>
-                    <span id="s-total-view" class="text-3xl font-serif italic text-vinho">R$ 0,00</span>
+                <textarea id="s-note" placeholder="Instruções Especiais" class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100 text-sm h-28 resize-none"></textarea>
+                <div class="bg-vinho-light p-6 rounded-3xl flex justify-between items-center">
+                    <span class="text-xs font-bold text-vinho uppercase tracking-widest">Total</span>
+                    <span id="s-total-view" class="text-3xl font-serif italic text-vinho font-bold">R$ 0,00</span>
                 </div>
-                <button type="submit" class="w-full btn-primary py-5 rounded-2xl font-bold text-xl shadow-2xl">Confirmar Pagamento</button>
+                <button type="submit" class="w-full btn-primary py-5 rounded-2xl font-bold text-xl">Confirmar Venda</button>
                 <button type="button" onclick="closeModal()" class="w-full text-gray-400 font-medium">Cancelar</button>
             </form>
         </div>
 
         <!-- Customer Modal -->
-        <div id="modal-customer" class="modal-box hidden opacity-0 scale-90 bg-white w-full max-w-lg rounded-[40px] p-10 shadow-[0_30px_100px_rgba(0,0,0,0.2)]">
-            <h3 class="text-3xl font-serif italic text-vinho mb-8">Novo Membro Amora</h3>
+        <div id="modal-customer" class="modal-box hidden opacity-0 scale-90 bg-white w-full max-w-lg rounded-[40px] p-10 shadow-2xl">
+            <h3 class="text-3xl font-serif italic text-vinho mb-8">Novo Cadastro</h3>
             <form id="form-customer" class="space-y-5">
-                <input type="text" id="c-name" placeholder="Nome Completo" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100 outline-none">
-                <input type="text" id="c-phone" placeholder="WhatsApp (DDD + Número)" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100 outline-none">
-                <div class="space-y-2">
-                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2 tracking-widest">Data de Nascimento</label>
-                    <input type="date" id="c-birth" class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100 outline-none">
-                </div>
-                <button type="submit" class="w-full btn-primary py-5 rounded-2xl font-bold text-lg mt-4 shadow-xl">Salvar Cadastro</button>
+                <input type="text" id="c-name" placeholder="Nome do Cliente" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100">
+                <input type="text" id="c-phone" placeholder="WhatsApp (ex: 85988...)" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100">
+                <input type="date" id="c-birth" class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100">
+                <button type="submit" class="w-full btn-primary py-5 rounded-2xl font-bold mt-4">Salvar Cliente</button>
                 <button type="button" onclick="closeModal()" class="w-full text-gray-400 font-medium">Fechar</button>
             </form>
         </div>
-
     </div>
 
-    <!-- Scripts -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-        import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, Timestamp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+    <!-- Toast -->
+    <div id="toast" class="fixed top-10 left-1/2 -translate-x-1/2 z-[120] opacity-0 pointer-events-none transition-all duration-500 translate-y-[-100px]">
+        <div id="toast-content" class="bg-vinho text-white px-8 py-3 rounded-full shadow-2xl font-medium text-sm">Atualizando...</div>
+    </div>
 
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'amora-luxury-v4';
+    <!-- Script de Integração com Planilha -->
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxVXjw7pHV-37ttvxSwR4NF284dm5ARtIN-tojACIRHZqqOYLvMxN6fpSUMyVxuYoK8/exec";
+        
+        let state = { products: [], customers: [], sales: [] };
 
-        let state = { user: null, products: [], customers: [], sales: [] };
+        const fetchData = async () => {
+            const icon = document.getElementById('sync-icon');
+            const text = document.getElementById('sync-text');
+            icon.classList.add('syncing');
+            text.innerText = "Sincronizando...";
 
-        const init = async () => {
-            lucide.createIcons();
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
-            else await signInAnonymously(auth);
-
-            onAuthStateChanged(auth, (u) => {
-                if (u) {
-                    state.user = u;
-                    setupAuth();
-                }
-            });
+            try {
+                const response = await fetch(SCRIPT_URL + "?action=read");
+                const data = await response.json();
+                state = data;
+                renderAll();
+                text.innerText = "Sincronizado";
+            } catch (e) {
+                console.error("Erro:", e);
+                text.innerText = "Erro de Sincronia";
+            }
+            icon.classList.remove('syncing');
         };
 
-        const setupAuth = () => {
-            document.getElementById('login-form').onsubmit = (e) => {
-                e.preventDefault();
-                const scr = document.getElementById('auth-screen');
-                const app = document.getElementById('app-content');
-                scr.style.opacity = '0';
-                setTimeout(() => {
-                    scr.classList.add('hidden');
-                    app.classList.remove('hidden');
-                    setTimeout(() => app.style.opacity = '1', 50);
-                    startSync();
-                }, 700);
-            };
+        const postData = async (payload) => {
+            showToast("Aguarde, enviando para planilha...");
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify(payload)
+                });
+                showToast("Dados salvos com sucesso!");
+                setTimeout(fetchData, 1200);
+            } catch (e) {
+                showToast("Erro ao gravar dados.");
+            }
         };
 
-        const startSync = () => {
-            const coll = (n) => collection(db, 'artifacts', appId, 'public', 'data', n);
-            onSnapshot(coll('products'), snap => { state.products = snap.docs.map(d => ({id: d.id, ...d.data()})); renderAll(); });
-            onSnapshot(coll('customers'), snap => { state.customers = snap.docs.map(d => ({id: d.id, ...d.data()})); renderAll(); });
-            onSnapshot(coll('sales'), snap => { state.sales = snap.docs.map(d => ({id: d.id, ...d.data()})); renderAll(); });
-        };
-
-        // UI & Modal Logic
+        // --- NAVEGAÇÃO ---
         window.showTab = (id) => {
             document.querySelectorAll('.tab-view').forEach(v => {
                 v.classList.add('hidden');
@@ -444,157 +426,150 @@
             }, 300);
         };
 
-        // Business Logic - Forms
-        window.openProductModal = (id = null) => {
-            const form = document.getElementById('form-product');
-            form.reset();
-            document.getElementById('p-id').value = id || '';
-            if(id) {
-                const p = state.products.find(x => x.id === id);
-                document.getElementById('p-name').value = p.name;
-                document.getElementById('p-cost').value = p.cost;
-                document.getElementById('p-price').value = p.price;
-                document.getElementById('p-stock').value = p.stock;
-                document.getElementById('p-min').value = p.minStock;
-            }
-            openModal('modal-product');
+        // --- FORMS ---
+        document.getElementById('form-product').onsubmit = (e) => {
+            e.preventDefault();
+            const data = [
+                document.getElementById('p-name').value,
+                parseFloat(document.getElementById('p-cost').value),
+                parseFloat(document.getElementById('p-price').value),
+                parseInt(document.getElementById('p-stock').value),
+                parseInt(document.getElementById('p-min').value)
+            ];
+            postData({ action: 'addProduct', data: data });
+            closeModal();
+            e.target.reset();
         };
 
-        document.getElementById('form-product').onsubmit = async (e) => {
+        document.getElementById('form-customer').onsubmit = (e) => {
             e.preventDefault();
-            const id = document.getElementById('p-id').value;
-            const data = {
-                name: document.getElementById('p-name').value,
-                cost: parseFloat(document.getElementById('p-cost').value),
-                price: parseFloat(document.getElementById('p-price').value),
-                stock: parseInt(document.getElementById('p-stock').value),
-                minStock: parseInt(document.getElementById('p-min').value)
-            };
-            if(id) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id), data);
-            else await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'products'), data);
+            const data = [
+                document.getElementById('c-name').value,
+                document.getElementById('c-phone').value,
+                document.getElementById('c-birth').value
+            ];
+            postData({ action: 'addCustomer', data: data });
             closeModal();
+            e.target.reset();
+        };
+
+        document.getElementById('form-sale').onsubmit = (e) => {
+            e.preventDefault();
+            const pIdx = document.getElementById('s-prod').value;
+            const cIdx = document.getElementById('s-cust').value;
+            const prod = state.products[pIdx];
+            const custName = cIdx !== "" ? state.customers[cIdx].name : "Ocasional";
+            const qty = parseInt(document.getElementById('s-qty').value);
+            
+            if(!prod || prod.stock < qty) return alert("Sem estoque!");
+
+            const total = prod.price * qty;
+            const profit = (prod.price - prod.cost) * qty;
+
+            const data = [
+                new Date().toLocaleString('pt-BR'),
+                prod.name,
+                custName,
+                document.getElementById('s-pay').value,
+                total,
+                profit,
+                document.getElementById('s-note').value
+            ];
+            
+            postData({ action: 'addSale', data: data, productIndex: pIdx, qty: qty });
+            closeModal();
+            e.target.reset();
         };
 
         const updateSaleSelects = () => {
-            document.getElementById('s-prod').innerHTML = '<option value="">Escolher Produto...</option>' + 
-                state.products.map(p => `<option value="${p.id}" data-price="${p.price}">${p.name} (R$ ${p.price})</option>`).join('');
-            document.getElementById('s-cust').innerHTML = '<option value="">Cliente Ocasional</option>' + 
-                state.customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            const pSel = document.getElementById('s-prod');
+            const cSel = document.getElementById('s-cust');
+            pSel.innerHTML = '<option value="">Escolher Produto...</option>' + 
+                state.products.map((p, i) => `<option value="${i}" data-price="${p.price}">${p.name} (R$ ${p.price})</option>`).join('');
+            cSel.innerHTML = '<option value="">Cliente Ocasional</option>' + 
+                state.customers.map((c, i) => `<option value="${i}">${c.name}</option>`).join('');
         };
 
         const calcTotal = () => {
-            const pId = document.getElementById('s-prod').value;
+            const pIdx = document.getElementById('s-prod').value;
             const qty = document.getElementById('s-qty').value;
-            const prod = state.products.find(x => x.id === pId);
+            const prod = state.products[pIdx];
             document.getElementById('s-total-view').innerText = `R$ ${(prod ? prod.price * qty : 0).toFixed(2)}`;
         };
         document.getElementById('s-prod').onchange = calcTotal;
         document.getElementById('s-qty').oninput = calcTotal;
 
-        document.getElementById('form-sale').onsubmit = async (e) => {
-            e.preventDefault();
-            const pId = document.getElementById('s-prod').value;
-            const cId = document.getElementById('s-cust').value;
-            const qty = parseInt(document.getElementById('s-qty').value);
-            const pay = document.getElementById('s-pay').value;
-            const product = state.products.find(x => x.id === pId);
-            const customer = state.customers.find(x => x.id === cId);
-
-            if(!product || product.stock < qty) return alert("Estoque Insuficiente!");
-
-            const sale = {
-                productName: product.name,
-                productId: pId,
-                customerName: customer ? customer.name : 'Ocasional',
-                total: product.price * qty,
-                profit: (product.price - product.cost) * qty,
-                payment: pay,
-                note: document.getElementById('s-note').value,
-                date: Timestamp.now()
-            };
-
-            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'sales'), sale);
-            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', pId), { stock: product.stock - qty });
-            closeModal();
-        };
-
-        document.getElementById('form-customer').onsubmit = async (e) => {
-            e.preventDefault();
-            const data = {
-                name: document.getElementById('c-name').value,
-                phone: document.getElementById('c-phone').value,
-                birth: document.getElementById('c-birth').value
-            };
-            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'customers'), data);
-            closeModal();
-        };
-
-        // Render Functions
+        // --- RENDERS ---
         const renderAll = () => {
-            // Dashboard Calculations
-            const revenue = state.sales.reduce((a, b) => a + b.total, 0);
-            const profit = state.sales.reduce((a, b) => a + (b.profit || 0), 0);
-            const low = state.products.filter(p => p.stock <= p.minStock).length;
+            // Stats
+            const revenue = state.sales.reduce((a, b) => a + Number(b.total || 0), 0);
+            const profit = state.sales.reduce((a, b) => a + Number(b.profit || 0), 0);
+            const low = state.products.filter(p => Number(p.stock) <= Number(p.minStock)).length;
             
             document.getElementById('dash-rev').innerText = `R$ ${revenue.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
             document.getElementById('dash-profit').innerText = `R$ ${profit.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
             document.getElementById('dash-low').innerText = low;
 
-            // Stats por pagamento
+            // Pagamentos
             const pays = { Pix: 0, Cartão: 0, Dinheiro: 0 };
-            state.sales.forEach(s => pays[s.payment] = (pays[s.payment] || 0) + s.total);
+            state.sales.forEach(s => pays[s.payment] = (pays[s.payment] || 0) + Number(s.total));
             document.getElementById('payment-stats').innerHTML = Object.entries(pays).map(([k,v]) => `
-                <div class="flex justify-between items-center p-4 rounded-2xl bg-gray-50 border border-gray-100 hover:scale-[1.02] transition-transform">
+                <div class="flex justify-between items-center p-4 rounded-2xl bg-gray-50 border border-gray-100">
                     <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">${k}</span>
                     <span class="font-serif italic text-vinho font-bold">R$ ${v.toFixed(2)}</span>
                 </div>
             `).join('');
 
-            // Birthdays
+            // Bdays
             const month = new Date().getMonth();
             const bdays = state.customers.filter(c => c.birth && new Date(c.birth).getUTCMonth() === month);
-            document.getElementById('bday-list').innerHTML = bdays.length ? bdays.map(c => `
-                <div class="flex justify-between items-center p-4 bg-vinho-light rounded-2xl group overflow-hidden">
-                    <span class="text-sm font-semibold text-gray-700">${c.name}</span>
-                    <a href="https://wa.me/55${c.phone.replace(/\D/g,'')}" target="_blank" class="px-5 py-2 bg-vinho text-white rounded-full text-[10px] font-bold shadow-lg hover:scale-110 transition-transform">Mimo</a>
+            document.getElementById('bday-list').innerHTML = bdays.map(c => `
+                <div class="flex justify-between items-center p-4 bg-vinho-light rounded-2xl">
+                    <span class="text-sm font-semibold text-gray-700 font-serif italic">${c.name}</span>
+                    <a href="https://wa.me/55${c.phone.replace(/\D/g,'')}" target="_blank" class="px-5 py-2 bg-vinho text-white rounded-full text-[10px] font-bold shadow-lg">WhatsApp</a>
                 </div>
-            `).join('') : '<p class="text-center text-gray-300 italic text-sm py-4">Nenhum este mês.</p>';
+            `).join('') || '<p class="text-center text-gray-300 italic text-sm">Nenhum aniversário.</p>';
 
-            // Tables
-            document.getElementById('inv-list').innerHTML = state.products.map(p => `
-                <tr class="hover:bg-gray-50/50 transition-colors">
+            // Tabelas
+            document.getElementById('inv-list').innerHTML = state.products.map((p, i) => `
+                <tr>
                     <td class="px-8 py-5 font-bold text-gray-700 text-sm">${p.name}</td>
-                    <td class="px-8 py-5 text-[11px] text-gray-400">R$ ${p.cost.toFixed(2)}</td>
-                    <td class="px-8 py-5 font-serif italic font-bold text-vinho">R$ ${p.price.toFixed(2)}</td>
-                    <td class="px-8 py-5 text-center"><span class="${p.stock <= p.minStock ? 'text-red-500 font-bold' : 'text-gray-500'}">${p.stock}</span></td>
-                    <td class="px-8 py-5 text-right"><button onclick="openProductModal('${p.id}')" class="text-gray-200 hover:text-vinho transition-colors"><i data-lucide="pencil" class="w-4 h-4"></i></button></td>
+                    <td class="px-8 py-5 text-xs text-gray-300">R$ ${Number(p.cost).toFixed(2)}</td>
+                    <td class="px-8 py-5 font-serif italic font-bold text-vinho">R$ ${Number(p.price).toFixed(2)}</td>
+                    <td class="px-8 py-5 text-center"><span class="${Number(p.stock) <= Number(p.minStock) ? 'text-red-500 font-bold' : ''}">${p.stock}</span></td>
+                    <td class="px-8 py-5 text-right"><button onclick="deleteRow('Estoque', ${i+1})" class="text-gray-100 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td>
                 </tr>
             `).join('');
 
-            document.getElementById('cust-list').innerHTML = state.customers.map(c => `
-                <tr class="hover:bg-gray-50/50 transition-colors">
+            document.getElementById('cust-list').innerHTML = state.customers.map((c, i) => `
+                <tr>
                     <td class="px-8 py-5 font-bold text-sm text-gray-700">${c.name}</td>
-                    <td class="px-8 py-5"><a href="https://wa.me/55${c.phone.replace(/\D/g,'')}" target="_blank" class="text-xs text-vinho font-bold hover:underline">WhatsApp</a></td>
-                    <td class="px-8 py-5 text-xs text-gray-500">${c.birth ? new Date(c.birth).toLocaleDateString('pt-BR') : '--'}</td>
-                    <td class="px-8 py-5 text-right"><button onclick="deleteDoc(doc(db, 'artifacts', '${appId}', 'public', 'data', 'customers', '${c.id}'))" class="text-gray-100 hover:text-red-500"><i data-lucide="user-minus" class="w-4 h-4"></i></button></td>
+                    <td class="px-8 py-5"><a href="https://wa.me/55${c.phone.replace(/\D/g,'')}" target="_blank" class="text-xs text-vinho font-bold">Enviar Whats</a></td>
+                    <td class="px-8 py-5 text-xs text-gray-400">${c.birth ? new Date(c.birth).toLocaleDateString('pt-BR') : '--'}</td>
+                    <td class="px-8 py-5 text-right"><button onclick="deleteRow('Clientes', ${i+1})" class="text-gray-100 hover:text-red-500"><i data-lucide="user-minus" class="w-4 h-4"></i></button></td>
                 </tr>
             `).join('');
 
-            const sortedSales = [...state.sales].sort((a,b) => b.date.toMillis() - a.date.toMillis());
-            document.getElementById('sale-history').innerHTML = sortedSales.map(s => `
-                <tr class="group hover:bg-vinho-light/30 transition-colors">
-                    <td class="px-8 py-5 text-xs text-gray-300 font-mono">${s.date.toDate().toLocaleDateString('pt-BR')}</td>
+            document.getElementById('sale-history').innerHTML = [...state.sales].reverse().map(s => `
+                <tr>
+                    <td class="px-8 py-5 text-[10px] text-gray-300 font-mono">${s.date}</td>
                     <td class="px-8 py-5">
-                        <div class="font-bold text-sm text-gray-800">${s.productName}</div>
-                        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">${s.customerName}</div>
-                        ${s.note ? `<div class="text-[10px] text-vinho italic mt-1 font-medium bg-white/50 px-2 py-0.5 rounded-full inline-block">Obs: ${s.note}</div>` : ''}
+                        <div class="font-bold text-sm text-gray-800">${s.product}</div>
+                        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">${s.customer}</div>
+                        ${s.note ? `<div class="text-[10px] text-vinho italic mt-1 bg-white/50 px-2 py-0.5 rounded-full inline-block">"${s.note}"</div>` : ''}
                     </td>
                     <td class="px-8 py-5"><span class="text-[10px] font-bold text-gray-400 uppercase">${s.payment}</span></td>
-                    <td class="px-8 py-5 text-right font-serif italic font-bold text-vinho text-lg">R$ ${s.total.toFixed(2)}</td>
+                    <td class="px-8 py-5 text-right font-serif italic font-bold text-vinho text-lg">R$ ${Number(s.total).toFixed(2)}</td>
                 </tr>
             `).join('');
 
             lucide.createIcons();
+        };
+
+        window.deleteRow = (sheetName, idx) => {
+            if(confirm("Deseja eliminar este registro da planilha?")) {
+                postData({ action: 'delete', sheet: sheetName, row: idx + 1 });
+            }
         };
 
         window.searchTable = (id, val) => {
@@ -602,7 +577,36 @@
             for (let r of rows) r.style.display = r.innerText.toLowerCase().includes(val.toLowerCase()) ? '' : 'none';
         };
 
-        window.addEventListener('DOMContentLoaded', init);
+        const showToast = (msg) => {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-content').innerText = msg;
+            t.classList.remove('opacity-0', 'translate-y-[-100px]');
+            t.classList.add('opacity-100', 'translate-y-0');
+            setTimeout(() => {
+                t.classList.add('opacity-0', 'translate-y-[-100px]');
+                t.classList.remove('opacity-100', 'translate-y-0');
+            }, 3000);
+        };
+
+        // Auth
+        document.getElementById('login-form').onsubmit = (e) => {
+            e.preventDefault();
+            if(document.getElementById('auth-pass').value === 'amora' || document.getElementById('auth-pass').value === '') {
+                const scr = document.getElementById('auth-screen');
+                const app = document.getElementById('app-content');
+                scr.style.opacity = '0';
+                setTimeout(() => {
+                    scr.classList.add('hidden');
+                    app.classList.remove('hidden');
+                    setTimeout(() => app.style.opacity = '1', 50);
+                    fetchData();
+                }, 700);
+            } else {
+                alert("Senha inválida");
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', () => lucide.createIcons());
     </script>
 </body>
 </html>
