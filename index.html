@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -28,7 +28,7 @@
         .text-vinho { color: var(--vinho); }
         .bg-vinho { background-color: var(--vinho); }
 
-        /* Animação da Logo */
+        /* Animação da Logomarca */
         @keyframes heartBeat {
             0% { transform: rotate(12deg) scale(1); }
             14% { transform: rotate(12deg) scale(1.3); }
@@ -46,7 +46,6 @@
             animation: heartBeat 2s infinite;
         }
 
-        /* Transições de Views */
         .view-enter {
             animation: viewSlideUp 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
         }
@@ -55,7 +54,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Glassmorphism & Cards */
         .glass-card { 
             background: white; 
             border: 1px solid rgba(97, 22, 36, 0.05); 
@@ -76,7 +74,6 @@
         .btn-primary:hover {
             background-color: var(--vinho-hover);
             transform: scale(1.02);
-            box-shadow: 0 8px 25px rgba(97, 22, 36, 0.3);
         }
         .btn-primary:active { transform: scale(0.96); }
 
@@ -87,28 +84,20 @@
             background: var(--vinho); border-radius: 0 4px 4px 0;
         }
 
-        /* Modal Overlay Animation */
         #modal-container { transition: opacity 0.3s ease; }
         .modal-box { transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease; }
 
-        @media (max-width: 768px) {
-            .bottom-nav { box-shadow: 0 -10px 30px rgba(0,0,0,0.05); border-radius: 24px 24px 0 0; }
-            .nav-link.active::after { display: none; }
-        }
-
-        /* Syncing Animation */
         .syncing { animation: spin 2s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        input:focus, select:focus, textarea:focus {
-            ring: 2px; ring-color: var(--vinho); border-color: var(--vinho);
-            transition: all 0.3s ease;
+        @media (max-width: 768px) {
+            .bottom-nav { box-shadow: 0 -10px 30px rgba(0,0,0,0.05); border-radius: 24px 24px 0 0; }
         }
     </style>
 </head>
 <body class="overflow-x-hidden">
 
-    <!-- Auth Screen -->
+    <!-- Tela de Autenticação -->
     <div id="auth-screen" class="fixed inset-0 z-[100] bg-[#fdfbfc] flex items-center justify-center p-6 transition-opacity duration-700">
         <div class="w-full max-w-sm text-center">
             <h1 class="text-7xl font-serif text-vinho mb-12 italic">amora<span class="logo-heart"></span></h1>
@@ -116,24 +105,24 @@
                 <form id="login-form" class="space-y-6">
                     <p class="text-xs uppercase tracking-widest text-gray-400 font-bold mb-2">Acesso Restrito</p>
                     <div class="space-y-3">
-                        <input type="text" id="auth-user" placeholder="Login" class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-vinho/20 text-center text-lg transition-all">
-                        <input type="password" id="auth-pass" placeholder="Senha" class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-vinho/20 text-center text-lg transition-all">
+                        <input type="text" id="auth-user" placeholder="Login" required class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-vinho/20 text-center text-lg transition-all">
+                        <input type="password" id="auth-pass" placeholder="Senha" required class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-vinho/20 text-center text-lg transition-all">
                     </div>
                     <button type="submit" id="btn-login" class="w-full btn-primary py-4 rounded-2xl font-bold text-lg shadow-xl disabled:opacity-50">
                         Entrar no Painel
                     </button>
-                    <p id="login-loading" class="text-[10px] text-gray-400 animate-pulse hidden">Validando credenciais na planilha...</p>
+                    <p id="login-loading" class="text-[10px] text-gray-400 animate-pulse hidden">A validar credenciais...</p>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Forced Password Change Screen -->
+    <!-- Tela de Troca de Senha Obrigatória -->
     <div id="password-change-screen" class="fixed inset-0 z-[110] bg-[#fdfbfc] flex items-center justify-center p-6 hidden">
         <div class="w-full max-w-sm text-center">
             <div class="glass-card p-10 shadow-2xl border border-gray-50">
                 <h2 class="text-2xl font-serif text-vinho italic mb-4">Segurança Amora</h2>
-                <p class="text-sm text-gray-500 mb-8 leading-relaxed">Você está usando a senha padrão. Por favor, escolha uma nova senha para continuar.</p>
+                <p class="text-sm text-gray-500 mb-8 leading-relaxed">Está a utilizar a senha padrão. Por favor, escolha uma nova senha para continuar.</p>
                 <form id="change-pass-form" class="space-y-4">
                     <input type="password" id="new-pass" placeholder="Nova Senha" required class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-vinho/20 text-center text-lg">
                     <input type="password" id="confirm-pass" placeholder="Confirmar Senha" required class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-vinho/20 text-center text-lg">
@@ -143,10 +132,10 @@
         </div>
     </div>
 
-    <!-- Main App Container -->
+    <!-- Conteúdo Principal da App -->
     <div id="app-content" class="hidden flex flex-col md:flex-row min-h-screen opacity-0 transition-opacity duration-1000">
         
-        <!-- Sidebar Navigation -->
+        <!-- Navegação Lateral -->
         <nav class="fixed bottom-0 left-0 right-0 md:static md:w-72 bg-white md:bg-transparent z-40 p-3 md:p-8 flex flex-row md:flex-col gap-2 md:h-screen border-t md:border-r border-gray-50 bottom-nav">
             <div class="hidden md:block mb-14 px-4">
                 <h1 class="text-4xl font-serif text-vinho italic">amora<span class="logo-heart"></span></h1>
@@ -171,7 +160,7 @@
             </button>
         </nav>
 
-        <!-- Main Workspace -->
+        <!-- Área de Trabalho -->
         <main class="flex-1 p-5 md:p-12 pb-28 md:pb-12 overflow-y-auto">
             <header class="flex justify-between items-center mb-10">
                 <div class="animate-enter">
@@ -182,11 +171,11 @@
                     </div>
                 </div>
                 <button onclick="openModal('modal-sale')" class="btn-primary px-8 py-3.5 rounded-full text-sm font-bold shadow-2xl flex items-center gap-3">
-                    <i data-lucide="plus" class="w-5 h-5"></i> Registrar Venda
+                    <i data-lucide="plus" class="w-5 h-5"></i> Registar Venda
                 </button>
             </header>
 
-            <!-- VIEW: DASHBOARD -->
+            <!-- VISTA: DASHBOARD -->
             <div id="view-dashboard" class="tab-view view-enter space-y-8">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
                     <div class="glass-card p-8 bg-white/60">
@@ -221,7 +210,7 @@
                 </div>
             </div>
 
-            <!-- VIEW: INVENTORY -->
+            <!-- VISTA: ESTOQUE -->
             <div id="view-inventory" class="tab-view hidden view-enter space-y-8">
                 <div class="flex flex-col md:flex-row justify-between gap-6">
                     <div class="relative w-full md:max-w-md">
@@ -248,7 +237,7 @@
                 </div>
             </div>
 
-            <!-- VIEW: CUSTOMERS -->
+            <!-- VISTA: CLIENTES -->
             <div id="view-customers" class="tab-view hidden view-enter space-y-8">
                 <div class="flex flex-col md:flex-row justify-between gap-6">
                     <div class="relative w-full md:max-w-md">
@@ -274,7 +263,7 @@
                 </div>
             </div>
 
-            <!-- VIEW: SALES -->
+            <!-- VISTA: VENDAS -->
             <div id="view-sales" class="tab-view hidden view-enter space-y-8">
                 <div class="glass-card overflow-hidden">
                     <table class="w-full text-left">
@@ -293,32 +282,32 @@
         </main>
     </div>
 
-    <!-- MODAL CONTAINER -->
+    <!-- CONTENTOR DE MODAIS -->
     <div id="modal-container" class="hidden fixed inset-0 z-[60] bg-vinho/20 backdrop-blur-md flex items-center justify-center p-4 opacity-0 transition-all duration-300">
         
-        <!-- Product Modal -->
+        <!-- Modal de Produto -->
         <div id="modal-product" class="modal-box hidden opacity-0 scale-90 bg-white w-full max-w-lg rounded-[40px] p-10 shadow-2xl">
             <h3 class="text-3xl font-serif italic text-vinho mb-8">Gestão de Artigo</h3>
             <form id="form-product" class="space-y-5">
-                <input type="hidden" id="p-id">
+                <input type="hidden" id="p-row">
                 <div class="space-y-2">
                     <label class="text-[10px] font-bold text-gray-400 uppercase ml-2 tracking-widest">Nome Comercial</label>
                     <input type="text" id="p-name" placeholder="Ex: Lingerie de Renda" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100">
                 </div>
                 <div class="grid grid-cols-2 gap-6">
-                    <input type="number" step="0.01" id="p-cost" placeholder="Custo R$" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none">
-                    <input type="number" step="0.01" id="p-price" placeholder="Venda R$" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none">
+                    <input type="number" step="0.01" id="p-cost" placeholder="Custo R$" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100">
+                    <input type="number" step="0.01" id="p-price" placeholder="Venda R$" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100">
                 </div>
                 <div class="grid grid-cols-2 gap-6">
-                    <input type="number" id="p-stock" placeholder="Qtd." required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none">
-                    <input type="number" id="p-min" placeholder="Mínimo" value="3" class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none">
+                    <input type="number" id="p-stock" placeholder="Quantidade" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100">
+                    <input type="number" id="p-min" placeholder="Mínimo" value="3" class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100">
                 </div>
                 <button type="submit" class="w-full btn-primary py-5 rounded-2xl font-bold">Salvar na Planilha</button>
                 <button type="button" onclick="closeModal()" class="w-full text-gray-400 font-medium pt-2">Voltar</button>
             </form>
         </div>
 
-        <!-- Sale Modal -->
+        <!-- Modal de Venda -->
         <div id="modal-sale" class="modal-box hidden opacity-0 scale-90 bg-white w-full max-w-lg rounded-[40px] p-10 shadow-2xl">
             <h3 class="text-3xl font-serif italic text-vinho mb-8">Efetuar Venda</h3>
             <form id="form-sale" class="space-y-6">
@@ -327,12 +316,12 @@
                     <option value="">Cliente Ocasional</option>
                 </select>
                 <div class="grid grid-cols-2 gap-4">
-                    <select id="s-pay" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none">
+                    <select id="s-pay" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none border border-gray-100">
                         <option value="Pix">Pix</option>
                         <option value="Cartão">Cartão</option>
                         <option value="Dinheiro">Dinheiro</option>
                     </select>
-                    <input type="number" id="s-qty" value="1" min="1" class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none text-center font-bold">
+                    <input type="number" id="s-qty" value="1" min="1" class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none text-center font-bold border border-gray-100">
                 </div>
                 <textarea id="s-note" placeholder="Instruções Especiais" class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100 text-sm h-28 resize-none"></textarea>
                 <div class="bg-vinho-light p-6 rounded-3xl flex justify-between items-center">
@@ -344,12 +333,12 @@
             </form>
         </div>
 
-        <!-- Customer Modal -->
+        <!-- Modal de Cliente -->
         <div id="modal-customer" class="modal-box hidden opacity-0 scale-90 bg-white w-full max-w-lg rounded-[40px] p-10 shadow-2xl">
             <h3 class="text-3xl font-serif italic text-vinho mb-8">Novo Cadastro</h3>
             <form id="form-customer" class="space-y-5">
                 <input type="text" id="c-name" placeholder="Nome do Cliente" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100">
-                <input type="text" id="c-phone" placeholder="WhatsApp (ex: 85988...)" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100">
+                <input type="text" id="c-phone" placeholder="WhatsApp" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100">
                 <input type="date" id="c-birth" class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100">
                 <button type="submit" class="w-full btn-primary py-5 rounded-2xl font-bold mt-4">Salvar Cliente</button>
                 <button type="button" onclick="closeModal()" class="w-full text-gray-400 font-medium">Fechar</button>
@@ -357,49 +346,49 @@
         </div>
     </div>
 
-    <!-- Toast -->
+    <!-- Toast de Feedback -->
     <div id="toast" class="fixed top-10 left-1/2 -translate-x-1/2 z-[120] opacity-0 pointer-events-none transition-all duration-500 translate-y-[-100px]">
-        <div id="toast-content" class="bg-vinho text-white px-8 py-3 rounded-full shadow-2xl font-medium text-sm">Atualizando...</div>
+        <div id="toast-content" class="bg-vinho text-white px-8 py-3 rounded-full shadow-2xl font-medium text-sm">A atualizar...</div>
     </div>
 
-    <!-- Script de Integração com Planilha -->
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxVXjw7pHV-37ttvxSwR4NF284dm5ARtIN-tojACIRHZqqOYLvMxN6fpSUMyVxuYoK8/exec";
         
         let state = { products: [], customers: [], sales: [], users: [], currentUser: null };
 
+        // --- FETCH DADOS ---
         const fetchData = async () => {
             const icon = document.getElementById('sync-icon');
             const text = document.getElementById('sync-text');
             if(icon) icon.classList.add('syncing');
-            if(text) text.innerText = "Sincronizando...";
+            if(text) text.innerText = "A sincronizar...";
 
             try {
                 const response = await fetch(SCRIPT_URL + "?action=read");
                 const data = await response.json();
-                state.products = data.products;
-                state.customers = data.customers;
-                state.sales = data.sales;
-                state.users = data.users;
+                state.products = data.products || [];
+                state.customers = data.customers || [];
+                state.sales = data.sales || [];
+                state.users = data.users || [];
                 
                 renderAll();
                 if(text) text.innerText = "Sincronizado";
             } catch (e) {
-                console.error("Erro:", e);
+                console.error("Erro ao sincronizar:", e);
                 if(text) text.innerText = "Erro de Sincronia";
             }
             if(icon) icon.classList.remove('syncing');
         };
 
         const postData = async (payload) => {
-            showToast("Aguarde, enviando para planilha...");
+            showToast("A sincronizar com a planilha...");
             try {
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
                     body: JSON.stringify(payload)
                 });
-                showToast("Dados salvos com sucesso!");
+                showToast("Dados guardados com sucesso!");
                 setTimeout(fetchData, 1200);
             } catch (e) {
                 showToast("Erro ao gravar dados.");
@@ -451,9 +440,26 @@
             }, 300);
         };
 
-        // --- FORMS ---
+        // --- FORMULÁRIOS ---
+        window.openProductModal = (idx = null) => {
+            const form = document.getElementById('form-product');
+            form.reset();
+            document.getElementById('p-row').value = idx !== null ? idx + 2 : ""; // +2 p/ cabeçalho
+            
+            if(idx !== null) {
+                const p = state.products[idx];
+                document.getElementById('p-name').value = p.name;
+                document.getElementById('p-cost').value = p.cost;
+                document.getElementById('p-price').value = p.price;
+                document.getElementById('p-stock').value = p.stock;
+                document.getElementById('p-min').value = p.minStock;
+            }
+            openModal('modal-product');
+        };
+
         document.getElementById('form-product').onsubmit = (e) => {
             e.preventDefault();
+            const row = document.getElementById('p-row').value;
             const data = [
                 document.getElementById('p-name').value,
                 parseFloat(document.getElementById('p-cost').value),
@@ -461,9 +467,12 @@
                 parseInt(document.getElementById('p-stock').value),
                 parseInt(document.getElementById('p-min').value)
             ];
-            postData({ action: 'addProduct', data: data });
+            postData({ 
+                action: 'addProduct', 
+                data: data,
+                row: row ? parseInt(row) : null 
+            });
             closeModal();
-            e.target.reset();
         };
 
         document.getElementById('form-customer').onsubmit = (e) => {
@@ -475,7 +484,6 @@
             ];
             postData({ action: 'addCustomer', data: data });
             closeModal();
-            e.target.reset();
         };
 
         document.getElementById('form-sale').onsubmit = (e) => {
@@ -486,7 +494,7 @@
             const custName = cIdx !== "" ? state.customers[cIdx].name : "Ocasional";
             const qty = parseInt(document.getElementById('s-qty').value);
             
-            if(!prod || prod.stock < qty) return alert("Sem estoque!");
+            if(!prod || prod.stock < qty) return alert("Estoque insuficiente!");
 
             const total = prod.price * qty;
             const profit = (prod.price - prod.cost) * qty;
@@ -503,14 +511,13 @@
             
             postData({ action: 'addSale', data: data, productIndex: pIdx, qty: qty });
             closeModal();
-            e.target.reset();
         };
 
         const updateSaleSelects = () => {
             const pSel = document.getElementById('s-prod');
             const cSel = document.getElementById('s-cust');
             pSel.innerHTML = '<option value="">Escolher Produto...</option>' + 
-                state.products.map((p, i) => `<option value="${i}" data-price="${p.price}">${p.name} (R$ ${p.price})</option>`).join('');
+                state.products.map((p, i) => `<option value="${i}">${p.name} (R$ ${Number(p.price).toFixed(2)})</option>`).join('');
             cSel.innerHTML = '<option value="">Cliente Ocasional</option>' + 
                 state.customers.map((c, i) => `<option value="${i}">${c.name}</option>`).join('');
         };
@@ -519,99 +526,79 @@
             const pIdx = document.getElementById('s-prod').value;
             const qty = document.getElementById('s-qty').value;
             const prod = state.products[pIdx];
-            document.getElementById('s-total-view').innerText = `R$ ${(prod ? prod.price * qty : 0).toFixed(2)}`;
+            document.getElementById('s-total-view').innerText = `R$ ${(prod ? Number(prod.price) * qty : 0).toFixed(2)}`;
         };
         document.getElementById('s-prod').onchange = calcTotal;
         document.getElementById('s-qty').oninput = calcTotal;
 
         // --- RENDERS ---
         const renderAll = () => {
-            // Stats
             const revenue = state.sales.reduce((a, b) => a + Number(b.total || 0), 0);
             const profit = state.sales.reduce((a, b) => a + Number(b.profit || 0), 0);
             const low = state.products.filter(p => Number(p.stock) <= Number(p.minStock)).length;
             
-            const revEl = document.getElementById('dash-rev');
-            const profEl = document.getElementById('dash-profit');
-            const lowEl = document.getElementById('dash-low');
+            document.getElementById('dash-rev').innerText = `R$ ${revenue.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('dash-profit').innerText = `R$ ${profit.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('dash-low').innerText = low;
 
-            if(revEl) revEl.innerText = `R$ ${revenue.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-            if(profEl) profEl.innerText = `R$ ${profit.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-            if(lowEl) lowEl.innerText = low;
-
-            // Pagamentos
             const pays = { Pix: 0, Cartão: 0, Dinheiro: 0 };
-            state.sales.forEach(s => pays[s.payment] = (pays[s.payment] || 0) + Number(s.total));
-            const payStatsEl = document.getElementById('payment-stats');
-            if(payStatsEl) {
-                payStatsEl.innerHTML = Object.entries(pays).map(([k,v]) => `
-                    <div class="flex justify-between items-center p-4 rounded-2xl bg-gray-50 border border-gray-100">
-                        <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">${k}</span>
-                        <span class="font-serif italic text-vinho font-bold">R$ ${v.toFixed(2)}</span>
-                    </div>
-                `).join('');
-            }
+            state.sales.forEach(s => pays[s.payment] = (pays[s.payment] || 0) + Number(s.total || 0));
+            document.getElementById('payment-stats').innerHTML = Object.entries(pays).map(([k,v]) => `
+                <div class="flex justify-between items-center p-4 rounded-2xl bg-gray-50 border border-gray-100">
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">${k}</span>
+                    <span class="font-serif italic text-vinho font-bold">R$ ${Number(v).toFixed(2)}</span>
+                </div>
+            `).join('');
 
-            // Bdays
             const month = new Date().getMonth();
             const bdays = state.customers.filter(c => c.birth && new Date(c.birth).getUTCMonth() === month);
-            const bdayListEl = document.getElementById('bday-list');
-            if(bdayListEl) {
-                bdayListEl.innerHTML = bdays.map(c => `
-                    <div class="flex justify-between items-center p-4 bg-vinho-light rounded-2xl">
-                        <span class="text-sm font-semibold text-gray-700 font-serif italic">${c.name}</span>
-                        <a href="https://wa.me/55${c.phone.replace(/\D/g,'')}" target="_blank" class="px-5 py-2 bg-vinho text-white rounded-full text-[10px] font-bold shadow-lg">WhatsApp</a>
-                    </div>
-                `).join('') || '<p class="text-center text-gray-300 italic text-sm">Nenhum aniversário.</p>';
-            }
+            document.getElementById('bday-list').innerHTML = bdays.map(c => `
+                <div class="flex justify-between items-center p-4 bg-vinho-light rounded-2xl">
+                    <span class="text-sm font-semibold text-gray-700 font-serif italic">${c.name}</span>
+                    <a href="https://wa.me/55${c.phone.replace(/\D/g,'')}" target="_blank" class="px-5 py-2 bg-vinho text-white rounded-full text-[10px] font-bold shadow-lg">WhatsApp</a>
+                </div>
+            `).join('') || '<p class="text-center text-gray-300 italic text-sm">Nenhum aniversário.</p>';
 
-            // Tabelas
-            const invListEl = document.getElementById('inv-list');
-            if(invListEl) {
-                invListEl.innerHTML = state.products.map((p, i) => `
-                    <tr>
-                        <td class="px-8 py-5 font-bold text-gray-700 text-sm">${p.name}</td>
-                        <td class="px-8 py-5 text-xs text-gray-300">R$ ${Number(p.cost).toFixed(2)}</td>
-                        <td class="px-8 py-5 font-serif italic font-bold text-vinho">R$ ${Number(p.price).toFixed(2)}</td>
-                        <td class="px-8 py-5 text-center"><span class="${Number(p.stock) <= Number(p.minStock) ? 'text-red-500 font-bold' : ''}">${p.stock}</span></td>
-                        <td class="px-8 py-5 text-right"><button onclick="deleteRow('Estoque', ${i+1})" class="text-gray-100 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td>
-                    </tr>
-                `).join('');
-            }
+            document.getElementById('inv-list').innerHTML = state.products.map((p, i) => `
+                <tr class="hover:bg-gray-50/50 transition-colors">
+                    <td class="px-8 py-5 font-bold text-gray-700 text-sm">${p.name}</td>
+                    <td class="px-8 py-5 text-xs text-gray-400">R$ ${Number(p.cost).toFixed(2)}</td>
+                    <td class="px-8 py-5 font-serif italic font-bold text-vinho">R$ ${Number(p.price).toFixed(2)}</td>
+                    <td class="px-8 py-5 text-center"><span class="${Number(p.stock) <= Number(p.minStock) ? 'text-red-500 font-bold' : 'text-gray-500'}">${p.stock}</span></td>
+                    <td class="px-8 py-5 text-right flex justify-end gap-3">
+                        <button onclick="openProductModal(${i})" class="text-gray-200 hover:text-vinho"><i data-lucide="pencil" class="w-4 h-4"></i></button>
+                        <button onclick="deleteRow('Estoque', ${i+1})" class="text-gray-100 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </td>
+                </tr>
+            `).join('');
 
-            const custListEl = document.getElementById('cust-list');
-            if(custListEl) {
-                custListEl.innerHTML = state.customers.map((c, i) => `
-                    <tr>
-                        <td class="px-8 py-5 font-bold text-sm text-gray-700">${c.name}</td>
-                        <td class="px-8 py-5"><a href="https://wa.me/55${c.phone.replace(/\D/g,'')}" target="_blank" class="text-xs text-vinho font-bold">Enviar Whats</a></td>
-                        <td class="px-8 py-5 text-xs text-gray-400">${c.birth ? new Date(c.birth).toLocaleDateString('pt-BR') : '--'}</td>
-                        <td class="px-8 py-5 text-right"><button onclick="deleteRow('Clientes', ${i+1})" class="text-gray-100 hover:text-red-500"><i data-lucide="user-minus" class="w-4 h-4"></i></button></td>
-                    </tr>
-                `).join('');
-            }
+            document.getElementById('cust-list').innerHTML = state.customers.map((c, i) => `
+                <tr class="hover:bg-gray-50/50 transition-colors">
+                    <td class="px-8 py-5 font-bold text-sm text-gray-700">${c.name}</td>
+                    <td class="px-8 py-5"><a href="https://wa.me/55${c.phone.replace(/\D/g,'')}" target="_blank" class="text-xs text-vinho font-bold">Enviar Whats</a></td>
+                    <td class="px-8 py-5 text-xs text-gray-500">${c.birth ? new Date(c.birth).toLocaleDateString('pt-BR') : '--'}</td>
+                    <td class="px-8 py-5 text-right"><button onclick="deleteRow('Clientes', ${i+1})" class="text-gray-100 hover:text-red-500"><i data-lucide="user-minus" class="w-4 h-4"></i></button></td>
+                </tr>
+            `).join('');
 
-            const saleHistoryEl = document.getElementById('sale-history');
-            if(saleHistoryEl) {
-                saleHistoryEl.innerHTML = [...state.sales].reverse().map(s => `
-                    <tr>
-                        <td class="px-8 py-5 text-[10px] text-gray-300 font-mono">${s.date}</td>
-                        <td class="px-8 py-5">
-                            <div class="font-bold text-sm text-gray-800">${s.product}</div>
-                            <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">${s.customer}</div>
-                            ${s.note ? `<div class="text-[10px] text-vinho italic mt-1 bg-white/50 px-2 py-0.5 rounded-full inline-block">"${s.note}"</div>` : ''}
-                        </td>
-                        <td class="px-8 py-5"><span class="text-[10px] font-bold text-gray-400 uppercase">${s.payment}</span></td>
-                        <td class="px-8 py-5 text-right font-serif italic font-bold text-vinho text-lg">R$ ${Number(s.total).toFixed(2)}</td>
-                    </tr>
-                `).join('');
-            }
+            document.getElementById('sale-history').innerHTML = [...state.sales].reverse().map(s => `
+                <tr class="group hover:bg-vinho-light/30 transition-colors">
+                    <td class="px-8 py-5 text-[10px] text-gray-300 font-mono">${s.date}</td>
+                    <td class="px-8 py-5">
+                        <div class="font-bold text-sm text-gray-800">${s.product}</div>
+                        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">${s.customer}</div>
+                        ${s.note ? `<div class="text-[10px] text-vinho italic mt-1 bg-white/50 px-2 py-0.5 rounded-full inline-block">"${s.note}"</div>` : ''}
+                    </td>
+                    <td class="px-8 py-5"><span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">${s.payment}</span></td>
+                    <td class="px-8 py-5 text-right font-serif italic font-bold text-vinho text-lg">R$ ${Number(s.total).toFixed(2)}</td>
+                </tr>
+            `).join('');
 
             lucide.createIcons();
         };
 
         window.deleteRow = (sheetName, idx) => {
-            if(confirm("Deseja eliminar este registro da planilha?")) {
+            if(confirm("Deseja eliminar este registo da planilha?")) {
                 postData({ action: 'delete', sheet: sheetName, row: idx + 1 });
             }
         };
@@ -632,7 +619,7 @@
             }, 3000);
         };
 
-        // Auth
+        // --- AUTH ---
         document.getElementById('login-form').onsubmit = async (e) => {
             e.preventDefault();
             const loginInput = document.getElementById('auth-user').value.trim();
@@ -646,19 +633,16 @@
             try {
                 const response = await fetch(SCRIPT_URL + "?action=read");
                 const data = await response.json();
-                state.users = data.users;
-                state.products = data.products;
-                state.customers = data.customers;
-                state.sales = data.sales;
+                state.users = data.users || [];
+                state.products = data.products || [];
+                state.customers = data.customers || [];
+                state.sales = data.sales || [];
                 
-                // Validação baseada na coluna B (login) e C (senha)
                 const validUser = state.users.find(u => u.login === loginInput && u.pass === passInput);
 
                 if(validUser || (loginInput === "" && passInput === "amora")) {
-                    const authUser = validUser || { login: "", pass: "amora", name: "Admin" };
-                    state.currentUser = authUser;
+                    state.currentUser = validUser || { login: "", pass: "amora", name: "Admin" };
 
-                    // Verifica se a senha é a padrão "123456"
                     if (passInput === "123456") {
                         document.getElementById('auth-screen').classList.add('hidden');
                         document.getElementById('password-change-screen').classList.remove('hidden');
@@ -670,14 +654,13 @@
                 }
             } catch (error) {
                 console.error(error);
-                alert("Erro ao conectar com a planilha.");
+                alert("Erro ao ligar à planilha.");
             } finally {
                 btn.disabled = false;
                 loadingMsg.classList.add('hidden');
             }
         };
 
-        // Troca de Senha
         document.getElementById('change-pass-form').onsubmit = async (e) => {
             e.preventDefault();
             const newPass = document.getElementById('new-pass').value;
@@ -685,21 +668,22 @@
 
             if (newPass.length < 4) return alert("A senha deve ter pelo menos 4 caracteres.");
             if (newPass !== confirmPass) return alert("As senhas não coincidem.");
-            if (newPass === "123456") return alert("Por favor, escolha uma senha diferente da padrão.");
+            if (newPass === "123456") return alert("Escolha uma senha diferente da padrão.");
 
-            // Envia para a planilha
             const userIdx = state.users.findIndex(u => u.login === state.currentUser.login);
-            // userIdx + 2 porque: +1 para 1-based index e +1 para pular o cabeçalho
             const rowIndex = userIdx + 2;
 
-            showToast("Atualizando senha...");
+            showToast("A atualizar senha...");
             try {
-                await postData({ 
-                    action: 'updatePassword', 
-                    row: rowIndex, 
-                    newPassword: newPass 
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({ 
+                        action: 'updatePassword', 
+                        row: rowIndex, 
+                        newPassword: newPass 
+                    })
                 });
-                
                 document.getElementById('password-change-screen').classList.add('hidden');
                 enterApp();
             } catch (e) {
@@ -719,9 +703,7 @@
             }, 700);
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-        });
+        window.addEventListener('DOMContentLoaded', fetchData);
     </script>
 </body>
 </html>
