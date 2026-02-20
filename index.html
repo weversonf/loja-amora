@@ -4,333 +4,180 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Amora - Boutique Management</title>
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
-
     <style>
-        :root { 
-            --vinho: #611624; 
-            --vinho-light: #fdf2f4; 
-            --vinho-hover: #4a101b; 
-        }
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #fdfbfc; 
-            color: #1a1a1a;
-            overflow-x: hidden;
-        }
+        :root { --vinho: #611624; --vinho-light: #fdf2f4; --vinho-hover: #4a101b; }
+        body { font-family: 'Inter', sans-serif; background-color: #fdfbfc; color: #1a1a1a; overflow-x: hidden; }
         .font-serif { font-family: 'Playfair Display', serif; }
         .text-vinho { color: var(--vinho); }
         .bg-vinho { background-color: var(--vinho); }
-
-        /* Animação do Logótipo */
-        @keyframes heartBeat {
-            0%, 100% { transform: rotate(12deg) scale(1); }
-            50% { transform: rotate(12deg) scale(1.3); }
-        }
-        .logo-heart { 
-            display: inline-block; 
-            width: 14px; height: 14px; 
-            background-color: currentColor; 
-            clip-path: path('M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'); 
-            margin-left: 2px; 
-            transform: rotate(12deg);
-            animation: heartBeat 2s infinite;
-        }
-
-        .glass-card { 
-            background: white; 
-            border: 1px solid rgba(97, 22, 36, 0.05); 
-            border-radius: 28px;
-            transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-
-        .btn-primary { 
-            background-color: var(--vinho); 
-            color: white; 
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(97, 22, 36, 0.2);
-        }
-        .btn-primary:hover {
-            background-color: var(--vinho-hover);
-            transform: scale(1.02);
-        }
-
-        .nav-link.active { 
-            background: var(--vinho-light); 
-            color: var(--vinho); 
-            font-weight: 600; 
-            border-left: 4px solid var(--vinho);
-        }
-
+        @keyframes heartBeat { 0%, 100% { transform: rotate(12deg) scale(1); } 50% { transform: rotate(12deg) scale(1.3); } }
+        .logo-heart { display: inline-block; width: 14px; height: 14px; background-color: currentColor; clip-path: path('M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'); margin-left: 2px; transform: rotate(12deg); animation: heartBeat 2s infinite; }
+        .glass-card { background: white; border: 1px solid rgba(97, 22, 36, 0.05); border-radius: 28px; transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1); }
+        .btn-primary { background-color: var(--vinho); color: white; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(97, 22, 36, 0.2); }
+        .btn-primary:hover:not(:disabled) { background-color: var(--vinho-hover); transform: scale(1.02); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .nav-link.active { background: var(--vinho-light); color: var(--vinho); font-weight: 600; border-left: 4px solid var(--vinho); }
         .tab-view { animation: slideUp 0.4s ease-out; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
         .syncing { animation: spin 2s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="min-h-screen">
 
-    <!-- Ecrã de Autenticação -->
+    <!-- Auth Screen -->
     <div id="auth-screen" class="fixed inset-0 z-[100] bg-white flex items-center justify-center p-6 transition-opacity duration-700">
         <div class="w-full max-w-sm text-center">
             <h1 class="text-7xl font-serif text-vinho mb-12 italic">amora<span class="logo-heart"></span></h1>
             <div class="glass-card p-10 shadow-2xl border border-gray-50">
                 <form id="login-form" class="space-y-6">
                     <p class="text-xs uppercase tracking-widest text-gray-400 font-bold">Acesso Restrito</p>
-                    <div class="space-y-3">
-                        <input type="text" id="auth-user" placeholder="Login" required class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 text-center text-lg focus:outline-none focus:ring-2 focus:ring-vinho/20">
-                        <input type="password" id="auth-pass" placeholder="Palavra-passe" required class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 text-center text-lg focus:outline-none focus:ring-2 focus:ring-vinho/20">
-                    </div>
-                    <button type="submit" id="btn-login" class="w-full btn-primary py-4 rounded-2xl font-bold text-lg shadow-xl disabled:opacity-50">Entrar</button>
-                    <p id="login-loading" class="text-xs text-gray-400 hidden animate-pulse">A validar credenciais...</p>
+                    <input type="text" id="auth-user" placeholder="Login" required class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 text-center text-lg focus:outline-none focus:ring-2 focus:ring-vinho/20">
+                    <input type="password" id="auth-pass" placeholder="Senha" required class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 text-center text-lg focus:outline-none focus:ring-2 focus:ring-vinho/20">
+                    <button type="submit" id="btn-login" class="w-full btn-primary py-4 rounded-2xl font-bold text-lg shadow-xl">Entrar</button>
+                    <p id="login-loading" class="text-xs text-gray-400 hidden animate-pulse">A validar...</p>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Ecrã de Alteração de Palavra-passe Obrigatória -->
+    <!-- Password Change -->
     <div id="password-change-screen" class="fixed inset-0 z-[110] bg-white flex items-center justify-center p-6 hidden">
         <div class="w-full max-w-sm text-center">
             <div class="glass-card p-10 shadow-2xl border border-gray-50">
                 <h2 class="text-2xl font-serif text-vinho mb-4">Segurança Amora</h2>
-                <p class="text-sm text-gray-500 mb-8">Detectamos que está a usar a palavra-passe padrão. Defina uma nova para continuar.</p>
                 <form id="change-pass-form" class="space-y-4">
-                    <input type="password" id="new-pass" placeholder="Nova Palavra-passe" required class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 text-center text-lg focus:outline-none">
-                    <input type="password" id="confirm-pass" placeholder="Confirmar Palavra-passe" required class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 text-center text-lg focus:outline-none">
-                    <button type="submit" class="w-full btn-primary py-4 rounded-2xl font-bold">Gravar e Aceder</button>
+                    <input type="password" id="new-pass" placeholder="Nova Senha" required class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 text-center">
+                    <input type="password" id="confirm-pass" placeholder="Confirmar" required class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 text-center">
+                    <button type="submit" class="w-full btn-primary py-4 rounded-2xl font-bold">Gravar</button>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Conteúdo Principal -->
+    <!-- Main Content -->
     <div id="app-content" class="hidden flex flex-col md:flex-row min-h-screen">
-        <!-- Barra Lateral -->
         <nav class="fixed bottom-0 left-0 right-0 md:static md:w-72 bg-white border-r border-gray-100 p-4 md:p-8 flex flex-row md:flex-col gap-2 z-50">
-            <div class="hidden md:block mb-12">
-                <h1 class="text-4xl font-serif text-vinho italic">amora<span class="logo-heart"></span></h1>
-                <p class="text-[10px] uppercase tracking-widest text-gray-400 mt-1">Boutique Management</p>
-            </div>
+            <div class="hidden md:block mb-12"><h1 class="text-4xl font-serif text-vinho italic">amora<span class="logo-heart"></span></h1></div>
             <button onclick="showTab('dashboard')" class="nav-link active flex-1 md:flex-none flex items-center justify-center md:justify-start gap-4 p-4 rounded-2xl text-xs md:text-sm" id="tab-dashboard"><i data-lucide="layout-grid" class="w-5 h-5"></i> <span class="hidden md:inline">Dashboard</span></button>
             <button onclick="showTab('inventory')" class="nav-link flex-1 md:flex-none flex items-center justify-center md:justify-start gap-4 p-4 rounded-2xl text-xs md:text-sm" id="tab-inventory"><i data-lucide="package" class="w-5 h-5"></i> <span class="hidden md:inline">Estoque</span></button>
             <button onclick="showTab('customers')" class="nav-link flex-1 md:flex-none flex items-center justify-center md:justify-start gap-4 p-4 rounded-2xl text-xs md:text-sm" id="tab-customers"><i data-lucide="users" class="w-5 h-5"></i> <span class="hidden md:inline">Clientes</span></button>
             <button onclick="showTab('sales')" class="nav-link flex-1 md:flex-none flex items-center justify-center md:justify-start gap-4 p-4 rounded-2xl text-xs md:text-sm" id="tab-sales"><i data-lucide="receipt" class="w-5 h-5"></i> <span class="hidden md:inline">Vendas</span></button>
         </nav>
 
-        <!-- Área Principal -->
         <main class="flex-1 p-6 md:p-12 pb-24 md:pb-12 overflow-y-auto">
             <header class="flex justify-between items-center mb-10">
-                <div>
-                    <h2 id="page-title" class="text-4xl font-serif italic text-gray-800">Dashboard</h2>
-                    <div class="text-[10px] uppercase font-bold text-gray-400 flex items-center gap-2 mt-1">
-                        <i data-lucide="refresh-cw" id="sync-icon" class="w-3 h-3"></i> <span id="sync-text">Sincronizado</span>
-                    </div>
-                </div>
-                <button onclick="openModal('modal-sale')" class="btn-primary px-8 py-3.5 rounded-full text-sm font-bold shadow-lg flex items-center gap-2">
-                    <i data-lucide="plus" class="w-5 h-5"></i> Registar Venda
-                </button>
+                <div><h2 id="page-title" class="text-4xl font-serif italic">Dashboard</h2><div class="text-[10px] uppercase font-bold text-gray-400 flex items-center gap-2 mt-1"><i data-lucide="refresh-cw" id="sync-icon" class="w-3 h-3"></i> <span id="sync-text">Sincronizado</span></div></div>
+                <button onclick="openModal('modal-sale')" class="btn-primary px-8 py-3.5 rounded-full text-sm font-bold shadow-lg flex items-center gap-2"><i data-lucide="plus" class="w-5 h-5"></i> Venda</button>
             </header>
 
-            <!-- VISTA: DASHBOARD -->
             <div id="view-dashboard" class="tab-view space-y-8">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="glass-card p-8"><p class="text-[11px] font-bold text-gray-400 uppercase mb-2">Faturamento</p><h3 id="dash-rev" class="text-3xl font-serif text-vinho italic">R$ 0,00</h3></div>
-                    <div class="glass-card p-8"><p class="text-[11px] font-bold text-gray-400 uppercase mb-2">Lucro Total</p><h3 id="dash-profit" class="text-3xl font-serif text-green-600 italic">R$ 0,00</h3></div>
-                    <div class="glass-card p-8"><p class="text-[11px] font-bold text-gray-400 uppercase mb-2">Baixo Estoque</p><h3 id="dash-low" class="text-3xl font-serif text-red-500 italic">0</h3></div>
+                    <div class="glass-card p-8"><p class="text-[11px] font-bold uppercase mb-2">Faturamento</p><h3 id="dash-rev" class="text-3xl font-serif text-vinho italic">R$ 0,00</h3></div>
+                    <div class="glass-card p-8"><p class="text-[11px] font-bold uppercase mb-2">Lucro</p><h3 id="dash-profit" class="text-3xl font-serif text-green-600 italic">R$ 0,00</h3></div>
+                    <div class="glass-card p-8"><p class="text-[11px] font-bold uppercase mb-2">Reposição</p><h3 id="dash-low" class="text-3xl font-serif text-red-500 italic">0</h3></div>
                 </div>
-
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="glass-card p-8">
-                        <h4 class="font-serif text-xl mb-6 italic">Fluxo por Pagamento</h4>
-                        <div id="payment-stats" class="space-y-4"></div>
-                    </div>
-                    <div class="glass-card p-8">
-                        <h4 class="font-serif text-xl mb-6 italic">Aniversários do Mês</h4>
-                        <div id="bday-list" class="space-y-4"></div>
-                    </div>
+                    <div class="glass-card p-8"><h4 class="font-serif text-xl mb-6 italic">Pagamentos</h4><div id="payment-stats" class="space-y-4"></div></div>
+                    <div class="glass-card p-8"><h4 class="font-serif text-xl mb-6 italic">Aniversariantes</h4><div id="bday-list" class="space-y-4"></div></div>
                 </div>
             </div>
 
-            <!-- VISTA: ESTOQUE -->
             <div id="view-inventory" class="tab-view hidden space-y-6">
-                <div class="flex flex-col md:flex-row justify-between gap-4">
-                    <div class="relative flex-1">
-                        <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
-                        <input type="text" oninput="searchTable('inv-list', this.value)" placeholder="Filtrar por nome..." class="w-full pl-12 pr-6 py-4 bg-white border border-gray-100 rounded-2xl outline-none shadow-sm focus:ring-2 focus:ring-vinho/10">
-                    </div>
-                    <button onclick="openProductModal()" class="btn-primary px-10 py-4 rounded-2xl font-bold">Novo Artigo</button>
-                </div>
-                <div class="glass-card overflow-hidden">
-                    <div class="overflow-x-auto no-scrollbar">
-                        <table class="w-full text-left min-w-[700px]">
-                            <thead class="bg-gray-50 border-b">
-                                <tr>
-                                    <th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">Artigo</th>
-                                    <th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">Preço Custo</th>
-                                    <th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">Preço Venda</th>
-                                    <th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase text-center">Stock</th>
-                                    <th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase text-right">Ação</th>
-                                </tr>
-                            </thead>
-                            <tbody id="inv-list" class="divide-y divide-gray-50"></tbody>
-                        </table>
-                    </div>
-                </div>
+                <div class="flex justify-between gap-4"><input type="text" oninput="searchTable('inv-list', this.value)" placeholder="Filtrar..." class="flex-1 px-6 py-4 bg-white border border-gray-100 rounded-2xl outline-none"><button onclick="openProductModal()" class="btn-primary px-10 py-4 rounded-2xl font-bold">Novo Artigo</button></div>
+                <div class="glass-card overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-left min-w-[700px]"><thead class="bg-gray-50 border-b"><tr><th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">Artigo</th><th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">Custo</th><th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">Venda</th><th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase text-center">Stock</th><th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase text-right">Ação</th></tr></thead><tbody id="inv-list" class="divide-y divide-gray-50"></tbody></table></div></div>
             </div>
 
-            <!-- VISTA: CLIENTES -->
             <div id="view-customers" class="tab-view hidden space-y-6">
-                <div class="flex justify-between gap-4">
-                    <input type="text" oninput="searchTable('cust-list', this.value)" placeholder="Buscar cliente..." class="flex-1 px-6 py-4 bg-white border border-gray-100 rounded-2xl outline-none shadow-sm">
-                    <button onclick="openModal('modal-customer')" class="btn-primary px-10 py-4 rounded-2xl font-bold">Cadastrar</button>
-                </div>
-                <div class="glass-card overflow-hidden">
-                    <table class="w-full text-left">
-                        <thead class="bg-gray-50 border-b">
-                            <tr>
-                                <th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">Nome</th>
-                                <th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">WhatsApp</th>
-                                <th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase text-right">Ação</th>
-                            </tr>
-                        </thead>
-                        <tbody id="cust-list" class="divide-y divide-gray-50"></tbody>
-                    </table>
-                </div>
+                <div class="flex justify-between gap-4"><input type="text" oninput="searchTable('cust-list', this.value)" placeholder="Buscar cliente..." class="flex-1 px-6 py-4 bg-white border border-gray-100 rounded-2xl outline-none"><button onclick="openModal('modal-customer')" class="btn-primary px-10 py-4 rounded-2xl font-bold">Cadastrar</button></div>
+                <div class="glass-card overflow-hidden"><table class="w-full text-left"><thead class="bg-gray-50 border-b"><tr><th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">Nome</th><th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">WhatsApp</th><th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase text-right">Ação</th></tr></thead><tbody id="cust-list" class="divide-y divide-gray-50"></tbody></table></div>
             </div>
 
-            <!-- VISTA: VENDAS -->
-            <div id="view-sales" class="tab-view hidden">
-                <div class="glass-card overflow-hidden">
-                    <div class="overflow-x-auto no-scrollbar">
-                        <table class="w-full text-left min-w-[600px]">
-                            <thead class="bg-gray-50 border-b">
-                                <tr>
-                                    <th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">Data</th>
-                                    <th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">Produto</th>
-                                    <th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">Cliente</th>
-                                    <th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase text-right">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody id="sale-history" class="divide-y divide-gray-50"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+            <div id="view-sales" class="tab-view hidden"><div class="glass-card overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-left min-w-[600px]"><thead class="bg-gray-50 border-b"><tr><th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">Data</th><th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">Produto</th><th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">Cliente</th><th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase text-center">Total</th><th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase text-right">Ação</th></tr></thead><tbody id="sale-history" class="divide-y divide-gray-50"></tbody></table></div></div></div>
         </main>
     </div>
 
-    <!-- MODAIS -->
+    <!-- Modals -->
     <div id="modal-container" class="hidden fixed inset-0 z-[120] bg-black/20 backdrop-blur-sm flex items-center justify-center p-4">
-        
-        <!-- Modal Venda -->
         <div id="modal-sale" class="modal-box hidden bg-white w-full max-w-lg rounded-[32px] p-10 shadow-2xl">
             <h3 class="text-3xl font-serif text-vinho mb-8 italic">Efetuar Venda</h3>
             <form id="form-sale" class="space-y-4">
+                <input type="hidden" id="s-row">
                 <div class="space-y-1">
-                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">Seleccionar Produto</label>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">Produto</label>
                     <select id="s-prod" required onchange="calcTotal()" class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100 outline-none"></select>
                 </div>
                 <div class="space-y-1">
-                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">Seleccionar Cliente</label>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">Cliente</label>
                     <select id="s-cust" class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100 outline-none"></select>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-1">
                         <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">Pagamento</label>
-                        <select id="s-pay" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100 outline-none">
-                            <option value="Pix">Pix</option>
-                            <option value="Cartão">Cartão</option>
-                            <option value="Dinheiro">Dinheiro</option>
-                        </select>
+                        <select id="s-pay" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100 outline-none"><option value="Pix">Pix</option><option value="Cartão">Cartão</option><option value="Dinheiro">Dinheiro</option></select>
                     </div>
                     <div class="space-y-1">
                         <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">Quantidade</label>
                         <input type="number" id="s-qty" value="1" min="1" oninput="calcTotal()" class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100 text-center font-bold">
                     </div>
                 </div>
-                <div class="p-6 bg-vinho-light rounded-2xl flex justify-between items-center mt-6">
-                    <span class="text-xs font-bold text-vinho uppercase">Total da Venda</span>
-                    <span id="s-total-view" class="text-3xl font-serif text-vinho font-bold">R$ 0,00</span>
-                </div>
-                <button type="submit" id="btn-submit-sale" class="w-full btn-primary py-5 rounded-2xl font-bold text-xl mt-4">Confirmar</button>
-                <button type="button" onclick="closeModal()" class="w-full text-gray-400 text-sm font-medium">Cancelar</button>
+                <div class="p-6 bg-vinho-light rounded-2xl flex justify-between items-center"><span class="text-xs font-bold text-vinho uppercase">Total</span><span id="s-total-view" class="text-3xl font-serif text-vinho font-bold">R$ 0,00</span></div>
+                <button type="submit" id="btn-submit-sale" class="w-full btn-primary py-5 rounded-2xl font-bold text-xl">Confirmar</button>
+                <button type="button" onclick="closeModal()" class="w-full text-gray-400 text-sm">Cancelar</button>
             </form>
         </div>
 
-        <!-- Modal Produto -->
         <div id="modal-product" class="modal-box hidden bg-white w-full max-w-lg rounded-[32px] p-10 shadow-2xl">
             <h3 class="text-3xl font-serif text-vinho mb-8 italic">Gestão de Artigo</h3>
             <form id="form-product" class="space-y-4">
                 <input type="hidden" id="p-row">
-                <input type="text" id="p-name" placeholder="Nome do Artigo" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl border-gray-100 outline-none">
+                <input type="text" id="p-name" placeholder="Nome" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none">
                 <div class="grid grid-cols-2 gap-4">
-                    <input type="number" step="0.01" id="p-cost" placeholder="Custo R$" required class="px-6 py-4 bg-gray-50 rounded-2xl outline-none border-gray-50">
-                    <input type="number" step="0.01" id="p-price" placeholder="Venda R$" required class="px-6 py-4 bg-gray-50 rounded-2xl outline-none border-gray-50">
+                    <input type="number" step="0.01" id="p-cost" placeholder="Custo R$" required class="px-6 py-4 bg-gray-50 rounded-2xl outline-none">
+                    <input type="number" step="0.01" id="p-price" placeholder="Venda R$" required class="px-6 py-4 bg-gray-50 rounded-2xl outline-none">
                 </div>
                 <div class="grid grid-cols-2 gap-4">
-                    <input type="number" id="p-stock" placeholder="Estoque Inicial" required class="px-6 py-4 bg-gray-50 rounded-2xl outline-none border-gray-50">
-                    <input type="number" id="p-min" placeholder="Stock Mínimo" value="3" class="px-6 py-4 bg-gray-50 rounded-2xl outline-none border-gray-50">
+                    <input type="number" id="p-stock" placeholder="Estoque" required class="px-6 py-4 bg-gray-50 rounded-2xl outline-none">
+                    <input type="number" id="p-min" placeholder="Mínimo" value="3" class="px-6 py-4 bg-gray-50 rounded-2xl outline-none">
                 </div>
-                <button type="submit" class="w-full btn-primary py-5 rounded-2xl font-bold mt-4">Gravar Artigo</button>
+                <button type="submit" class="w-full btn-primary py-5 rounded-2xl font-bold">Gravar</button>
                 <button type="button" onclick="closeModal()" class="w-full text-gray-400 text-sm">Voltar</button>
             </form>
         </div>
 
-        <!-- Modal Cliente -->
         <div id="modal-customer" class="modal-box hidden bg-white w-full max-w-lg rounded-[32px] p-10 shadow-2xl">
-            <h3 class="text-3xl font-serif text-vinho mb-8 italic">Ficha de Cliente</h3>
+            <h3 class="text-3xl font-serif text-vinho mb-8 italic">Ficha Cliente</h3>
             <form id="form-customer" class="space-y-4">
-                <input type="text" id="c-name" placeholder="Nome Completo" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100 outline-none">
-                <input type="text" id="c-phone" placeholder="WhatsApp" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100 outline-none">
-                <div class="space-y-1">
-                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">Data de Nascimento</label>
-                    <input type="date" id="c-birth" class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100 outline-none">
-                </div>
-                <button type="submit" class="w-full btn-primary py-5 rounded-2xl font-bold mt-4">Salvar Cadastro</button>
+                <input type="text" id="c-name" placeholder="Nome" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none">
+                <input type="text" id="c-phone" placeholder="WhatsApp" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none">
+                <input type="date" id="c-birth" class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none">
+                <button type="submit" class="w-full btn-primary py-5 rounded-2xl font-bold">Salvar</button>
                 <button type="button" onclick="closeModal()" class="w-full text-gray-400 text-sm">Cancelar</button>
             </form>
         </div>
     </div>
 
-    <!-- Toast de Feedback -->
-    <div id="toast" class="fixed top-10 left-1/2 -translate-x-1/2 z-[130] opacity-0 pointer-events-none transition-all duration-500 translate-y-[-100px]">
-        <div id="toast-content" class="bg-vinho text-white px-8 py-3 rounded-full shadow-2xl font-medium text-sm">Processando...</div>
-    </div>
+    <div id="toast" class="fixed top-10 left-1/2 -translate-x-1/2 z-[130] opacity-0 transition-all duration-500 translate-y-[-100px]"><div id="toast-content" class="bg-vinho text-white px-8 py-3 rounded-full shadow-2xl font-medium text-sm">Processando...</div></div>
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxVXjw7pHV-37ttvxSwR4NF284dm5ARtIN-tojACIRHZqqOYLvMxN6fpSUMyVxuYoK8/exec";
         let state = { products: [], customers: [], sales: [], users: [], currentUser: null };
 
-        // Função robusta para converter valores da planilha em números JS
-        const parseCurrency = (val) => {
-            if (val === undefined || val === null || val === "") return 0;
-            if (typeof val === 'number') return val;
-            
-            let clean = String(val).replace(/R\$/g, '').replace(/\s/g, '');
-            // Se o valor tiver vírgula e ponto (1.234,56), remove o ponto e troca a vírgula
-            if (clean.includes(',') && clean.includes('.')) {
-                clean = clean.replace(/\./g, '').replace(',', '.');
-            } else {
-                // Se só tiver vírgula (1234,56), troca para ponto
-                clean = clean.replace(',', '.');
-            }
-            
-            const num = parseFloat(clean);
-            return isNaN(num) ? 0 : num;
+        const parseCurrency = (v) => {
+            if (!v) return 0;
+            if (typeof v === 'number') return v;
+            let c = String(v).replace(/R\$/g, '').replace(/\s/g, '');
+            if (c.includes(',') && c.includes('.')) c = c.replace(/\./g, '').replace(',', '.');
+            else c = c.replace(',', '.');
+            return parseFloat(c) || 0;
         };
 
-        const formatCurrency = (val) => {
-            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseCurrency(val));
-        };
-
-        // --- LÓGICA DE DADOS ---
+        const formatCurrency = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseCurrency(v));
 
         const fetchData = async () => {
             const icon = document.getElementById('sync-icon');
@@ -340,40 +187,24 @@
                 const data = await res.json();
                 state = { ...state, ...data };
                 renderAll();
-            } catch (e) {
-                console.error("Erro na leitura:", e);
-                showToast("Erro ao sincronizar dados.");
-            }
+            } catch (e) { console.error(e); }
             if(icon) icon.classList.remove('syncing');
         };
 
         const postData = async (payload) => {
-            showToast("Sincronizando com a planilha...");
+            showToast("Sincronizando...");
             try {
-                await fetch(SCRIPT_URL, { 
-                    method: 'POST', 
-                    mode: 'no-cors', 
-                    body: JSON.stringify(payload) 
-                });
-                showToast("Sucesso ao gravar!");
-                // Aguarda um pouco antes de atualizar para garantir que a planilha processou o append
+                await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+                showToast("Sucesso!");
                 setTimeout(fetchData, 1800);
-            } catch (e) {
-                showToast("Erro na ligação com a planilha.");
-                console.error(e);
-            }
+            } catch (e) { showToast("Erro!"); }
         };
-
-        // --- INTERFACE ---
 
         const showTab = (id) => {
             document.querySelectorAll('.tab-view').forEach(v => v.classList.add('hidden'));
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             document.getElementById(`view-${id}`).classList.remove('hidden');
             document.getElementById(`tab-${id}`).classList.add('active');
-            
-            const labels = { dashboard: 'Dashboard', inventory: 'Estoque', customers: 'Clientes', sales: 'Vendas' };
-            document.getElementById('page-title').innerText = labels[id];
             lucide.createIcons();
         };
 
@@ -384,81 +215,70 @@
             if(id === 'modal-sale') updateSaleSelects();
         };
 
-        const closeModal = () => {
-            document.getElementById('modal-container').classList.add('hidden');
-        };
+        const closeModal = () => document.getElementById('modal-container').classList.add('hidden');
 
         const updateSaleSelects = () => {
-            const pSel = document.getElementById('s-prod');
-            const cSel = document.getElementById('s-cust');
-            
-            pSel.innerHTML = '<option value="">Escolha um artigo...</option>' + 
-                state.products.map((p, i) => `<option value="${i}">${p.name} (${formatCurrency(p.price)})</option>`).join('');
-            
-            cSel.innerHTML = '<option value="">Cliente Ocasional</option>' + 
-                state.customers.map((c, i) => `<option value="${i}">${c.name}</option>`).join('');
+            document.getElementById('s-prod').innerHTML = '<option value="">Produto...</option>' + state.products.map((p, i) => `<option value="${i}">${p.name} (${formatCurrency(p.price)})</option>`).join('');
+            document.getElementById('s-cust').innerHTML = '<option value="">Ocasional</option>' + state.customers.map((c, i) => `<option value="${i}">${c.name}</option>`).join('');
         };
 
         const calcTotal = () => {
             const pIdx = document.getElementById('s-prod').value;
             const qty = document.getElementById('s-qty').value;
-            const totalEl = document.getElementById('s-total-view');
-            
-            if(pIdx === "" || !state.products[pIdx]) {
-                totalEl.innerText = "R$ 0,00";
-                return;
-            }
-            const total = parseCurrency(state.products[pIdx].price) * Number(qty);
-            totalEl.innerText = formatCurrency(total);
+            const total = (pIdx !== "" && state.products[pIdx]) ? parseCurrency(state.products[pIdx].price) * Number(qty) : 0;
+            document.getElementById('s-total-view').innerText = formatCurrency(total);
         };
 
-        // --- FORMULÁRIOS ---
-
-        document.getElementById('form-sale').onsubmit = (e) => {
+        document.getElementById('form-sale').onsubmit = async (e) => {
             e.preventDefault();
             const pIdx = document.getElementById('s-prod').value;
-            const cIdx = document.getElementById('s-cust').value;
-            
-            if (pIdx === "") return alert("Selecione um produto.");
-            
+            const btn = document.getElementById('btn-submit-sale');
+            if (pIdx === "") return;
             const prod = state.products[pIdx];
             const qty = parseInt(document.getElementById('s-qty').value);
+            if(parseCurrency(prod.stock) < qty) return alert("Estoque insuficiente!");
             
-            if(parseCurrency(prod.stock) < qty) {
-                return alert(`Estoque insuficiente! Disponível: ${prod.stock}`);
-            }
-
+            btn.disabled = true;
             const total = parseCurrency(prod.price) * qty;
-            const costTotal = parseCurrency(prod.cost) * qty;
-            const profit = total - costTotal;
-
-            const data = [
-                new Date().toLocaleString('pt-BR'), 
-                prod.name, 
-                cIdx !== "" ? state.customers[cIdx].name : "Ocasional", 
-                document.getElementById('s-pay').value, 
-                total, 
-                profit, 
-                ""
-            ];
+            const profit = (parseCurrency(prod.price) - parseCurrency(prod.cost)) * qty;
+            const data = [new Date().toLocaleString('pt-BR'), prod.name, document.getElementById('s-cust').value !== "" ? state.customers[document.getElementById('s-cust').value].name : "Ocasional", document.getElementById('s-pay').value, total, profit, ""];
             
-            postData({ 
-                action: 'addSale', 
-                data: data, 
-                productIndex: pIdx, 
-                qty: qty 
-            });
+            // Nota: body.row é passado, mas o script precisaria tratar para editar em vez de append.
+            const row = document.getElementById('s-row').value;
+            await postData({ action: 'addSale', data: data, productIndex: pIdx, qty: qty, row: row ? parseInt(row) : null });
             
+            btn.disabled = false;
             closeModal();
             e.target.reset();
+        };
+
+        window.openSaleModal = (idx = null) => {
+            const form = document.getElementById('form-sale');
+            form.reset();
+            // Guardar a linha original da planilha (idx é do array filtrado/reverso)
+            const realIdx = state.sales.length - 1 - idx; 
+            document.getElementById('s-row').value = idx !== null ? realIdx + 2 : "";
+            
+            if(idx !== null) {
+                const s = [...state.sales].reverse()[idx];
+                // Localizar produto e cliente pelos nomes (lógica de fallback)
+                const pIdx = state.products.findIndex(p => p.name === s.product);
+                const cIdx = state.customers.findIndex(c => c.name === s.customer);
+                
+                updateSaleSelects();
+                document.getElementById('s-prod').value = pIdx !== -1 ? pIdx : "";
+                document.getElementById('s-cust').value = cIdx !== -1 ? cIdx : "";
+                document.getElementById('s-pay').value = s.payment;
+                document.getElementById('s-qty').value = 1; // Quantidade não é salva na aba Vendas no script atual
+                calcTotal();
+            }
+            openModal('modal-sale');
         };
 
         window.openProductModal = (idx = null) => {
             const form = document.getElementById('form-product');
             form.reset();
-            // idx + 2: 1 para cabeçalho, 1 para ser 1-based index (ex: idx 0 vira linha 2)
-            document.getElementById('p-row').value = idx !== null ? idx + 2 : ""; 
-            
+            document.getElementById('p-row').value = idx !== null ? idx + 2 : "";
             if(idx !== null) {
                 const p = state.products[idx];
                 document.getElementById('p-name').value = p.name;
@@ -470,181 +290,99 @@
             openModal('modal-product');
         };
 
-        document.getElementById('form-product').onsubmit = (e) => {
+        document.getElementById('form-product').onsubmit = async (e) => {
             e.preventDefault();
             const row = document.getElementById('p-row').value;
-            const data = [
-                document.getElementById('p-name').value, 
-                parseFloat(document.getElementById('p-cost').value || 0), 
-                parseFloat(document.getElementById('p-price').value || 0), 
-                parseInt(document.getElementById('p-stock').value || 0), 
-                parseInt(document.getElementById('p-min').value || 0)
-            ];
-            postData({ 
-                action: 'addProduct', 
-                data: data, 
-                row: row ? parseInt(row) : null 
-            });
+            const data = [document.getElementById('p-name').value, parseFloat(document.getElementById('p-cost').value || 0), parseFloat(document.getElementById('p-price').value || 0), parseInt(document.getElementById('p-stock').value || 0), parseInt(document.getElementById('p-min').value || 0)];
+            await postData({ action: 'addProduct', data: data, row: row ? parseInt(row) : null });
             closeModal();
             e.target.reset();
         };
 
-        document.getElementById('form-customer').onsubmit = (e) => {
+        document.getElementById('form-customer').onsubmit = async (e) => {
             e.preventDefault();
-            const data = [
-                document.getElementById('c-name').value,
-                document.getElementById('c-phone').value,
-                document.getElementById('c-birth').value
-            ];
-            postData({ action: 'addCustomer', data: data });
+            await postData({ action: 'addCustomer', data: [document.getElementById('c-name').value, document.getElementById('c-phone').value, document.getElementById('c-birth').value] });
             closeModal();
             e.target.reset();
         };
-
-        // --- RENDERIZAÇÃO ---
 
         const renderAll = () => {
-            // Dashboard
-            const revenue = state.sales.reduce((a, b) => a + parseCurrency(b.total), 0);
-            const profit = state.sales.reduce((a, b) => a + parseCurrency(b.profit), 0);
-            const low = state.products.filter(p => parseCurrency(p.stock) <= parseCurrency(p.minStock)).length;
+            document.getElementById('dash-rev').innerText = formatCurrency(state.sales.reduce((a, b) => a + parseCurrency(b.total), 0));
+            document.getElementById('dash-profit').innerText = formatCurrency(state.sales.reduce((a, b) => a + parseCurrency(b.profit), 0));
+            document.getElementById('dash-low').innerText = state.products.filter(p => parseCurrency(p.stock) <= parseCurrency(p.minStock)).length;
             
-            document.getElementById('dash-rev').innerText = formatCurrency(revenue);
-            document.getElementById('dash-profit').innerText = formatCurrency(profit);
-            document.getElementById('dash-low').innerText = low;
-
-            // Stats Pagamento
             const pays = { Pix: 0, Cartão: 0, Dinheiro: 0 };
             state.sales.forEach(s => pays[s.payment] = (pays[s.payment] || 0) + parseCurrency(s.total));
-            document.getElementById('payment-stats').innerHTML = Object.entries(pays).map(([k,v]) => `
-                <div class="flex justify-between items-center p-4 rounded-2xl bg-gray-50 border border-gray-100">
-                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">${k}</span>
-                    <span class="font-serif italic text-vinho font-bold text-lg">${formatCurrency(v)}</span>
-                </div>
-            `).join('');
-
-            // Aniversários
-            const currentMonth = new Date().getMonth();
-            const bdays = state.customers.filter(c => {
-                if(!c.birth) return false;
-                const d = new Date(c.birth);
-                return !isNaN(d.getTime()) && d.getUTCMonth() === currentMonth;
-            });
-            document.getElementById('bday-list').innerHTML = bdays.map(c => `
-                <div class="flex justify-between items-center p-4 bg-vinho-light rounded-2xl">
-                    <span class="text-sm font-semibold text-gray-700 font-serif italic">${c.name}</span>
-                    <a href="https://wa.me/${c.phone.replace(/\D/g,'')}" target="_blank" class="px-5 py-2 bg-vinho text-white rounded-full text-[10px] font-bold shadow-lg hover:scale-105 transition-transform">WhatsApp</a>
-                </div>
-            `).join('') || '<p class="text-center text-gray-300 italic text-sm">Nenhum aniversário este mês.</p>';
-
-            // Tabelas Estoque
-            document.getElementById('inv-list').innerHTML = state.products.map((p, i) => `
-                <tr class="hover:bg-gray-50/50">
-                    <td class="px-8 py-5 font-bold text-gray-700 text-sm">${p.name}</td>
-                    <td class="px-8 py-5 text-gray-400 text-xs font-mono">${formatCurrency(p.cost)}</td>
-                    <td class="px-8 py-5 font-serif italic text-vinho">${formatCurrency(p.price)}</td>
-                    <td class="px-8 py-5 text-center ${parseCurrency(p.stock) <= parseCurrency(p.minStock) ? 'text-red-500 font-bold' : 'text-gray-500'}">${p.stock}</td>
-                    <td class="px-8 py-5 text-right flex justify-end gap-3">
-                        <button onclick="openProductModal(${i})" class="text-gray-200 hover:text-vinho transition-colors"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                        <button onclick="deleteRow('Estoque', ${i+1})" class="text-gray-100 hover:text-red-500 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                    </td>
-                </tr>
-            `).join('');
-
-            document.getElementById('cust-list').innerHTML = state.customers.map((c, i) => `
-                <tr>
-                    <td class="px-8 py-5 font-bold text-sm text-gray-700">${c.name}</td>
-                    <td class="px-8 py-5 text-xs text-vinho font-bold uppercase tracking-widest">${c.phone}</td>
-                    <td class="px-8 py-5 text-right"><button onclick="deleteRow('Clientes', ${i+1})" class="text-gray-100 hover:text-red-500 transition-colors"><i data-lucide="user-minus" class="w-4 h-4"></i></button></td>
-                </tr>
-            `).join('');
-
-            document.getElementById('sale-history').innerHTML = [...state.sales].reverse().map(s => `
+            document.getElementById('payment-stats').innerHTML = Object.entries(pays).map(([k,v]) => `<div class="flex justify-between items-center p-4 rounded-2xl bg-gray-50 border border-gray-100"><span class="text-xs font-bold text-gray-400 uppercase tracking-widest">${k}</span><span class="font-serif italic text-vinho font-bold text-lg">${formatCurrency(v)}</span></div>`).join('');
+            
+            const month = new Date().getMonth();
+            document.getElementById('bday-list').innerHTML = state.customers.filter(c => c.birth && new Date(c.birth).getUTCMonth() === month).map(c => `<div class="flex justify-between items-center p-4 bg-vinho-light rounded-2xl"><span class="text-sm font-semibold text-gray-700 font-serif italic">${c.name}</span><a href="https://wa.me/${c.phone.replace(/\D/g,'')}" target="_blank" class="px-5 py-2 bg-vinho text-white rounded-full text-[10px] font-bold shadow-lg hover:scale-105 transition-transform">WhatsApp</a></div>`).join('') || '<p class="text-center text-gray-300 italic text-sm">Nenhum.</p>';
+            
+            document.getElementById('inv-list').innerHTML = state.products.map((p, i) => `<tr class="hover:bg-gray-50/50"><td class="px-8 py-5 font-bold text-gray-700 text-sm">${p.name}</td><td class="px-8 py-5 text-gray-400 text-xs font-mono">${formatCurrency(p.cost)}</td><td class="px-8 py-5 font-serif italic text-vinho">${formatCurrency(p.price)}</td><td class="px-8 py-5 text-center ${parseCurrency(p.stock) <= parseCurrency(p.minStock) ? 'text-red-500 font-bold' : 'text-gray-500'}">${p.stock}</td><td class="px-8 py-5 text-right flex justify-end gap-3"><button onclick="openProductModal(${i})" class="text-gray-200 hover:text-vinho"><i data-lucide="edit-3" class="w-4 h-4"></i></button><button onclick="deleteRow('Estoque', ${i+1})" class="text-gray-100 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`).join('');
+            
+            document.getElementById('cust-list').innerHTML = state.customers.map((c, i) => `<tr><td class="px-8 py-5 font-bold text-sm text-gray-700">${c.name}</td><td class="px-8 py-5 text-xs text-vinho font-bold uppercase tracking-widest">${c.phone}</td><td class="px-8 py-5 text-right"><button onclick="deleteRow('Clientes', ${i+1})" class="text-gray-100 hover:text-red-500"><i data-lucide="user-minus" class="w-4 h-4"></i></button></td></tr>`).join('');
+            
+            document.getElementById('sale-history').innerHTML = [...state.sales].reverse().map((s, i) => `
                 <tr class="group hover:bg-vinho-light/30 transition-colors">
                     <td class="px-8 py-5 text-[10px] text-gray-300 font-mono">${s.date}</td>
                     <td class="px-8 py-5 text-sm font-bold text-gray-800">${s.product}</td>
                     <td class="px-8 py-4 text-xs text-gray-400 font-bold">${s.customer}</td>
-                    <td class="px-8 py-5 text-right font-serif italic text-vinho text-lg font-bold">${formatCurrency(s.total)}</td>
+                    <td class="px-8 py-5 text-center font-serif italic text-vinho text-lg font-bold">${formatCurrency(s.total)}</td>
+                    <td class="px-8 py-5 text-right flex justify-end gap-3">
+                        <button onclick="openSaleModal(${i})" class="text-gray-200 hover:text-vinho"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                        <button onclick="deleteRow('Vendas', ${state.sales.length - i})" class="text-gray-100 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </td>
                 </tr>
             `).join('');
             
             lucide.createIcons();
         };
 
-        // --- AUTH & SETUP ---
-
         document.getElementById('login-form').onsubmit = async (e) => {
             e.preventDefault();
             const login = document.getElementById('auth-user').value.trim();
             const pass = document.getElementById('auth-pass').value;
-            const loading = document.getElementById('login-loading');
-            
-            loading.classList.remove('hidden');
-
+            document.getElementById('login-loading').classList.remove('hidden');
             try {
                 const res = await fetch(SCRIPT_URL + "?action=read");
                 const data = await res.json();
                 state = { ...state, ...data };
-                
                 const valid = state.users.find(u => u.login === login && u.pass === pass);
-
                 if(valid || (login === "admin" && pass === "amora")) {
-                    state.currentUser = valid || { login: "admin", pass: "amora", name: "Administrador" };
+                    state.currentUser = valid || { login: "admin", pass: "amora" };
                     if(pass === "123456") {
                         document.getElementById('auth-screen').classList.add('hidden');
                         document.getElementById('password-change-screen').classList.remove('hidden');
-                    } else {
-                        enterApp();
-                    }
-                } else { 
-                    alert("Credenciais incorretas."); 
-                }
-            } catch(e) { 
-                alert("Falha na ligação com o servidor. Verifique a ligação à internet."); 
-            } finally {
-                loading.classList.add('hidden');
-            }
+                    } else enterApp();
+                } else alert("Incorretas.");
+            } catch(e) { alert("Erro servidor."); }
+            document.getElementById('login-loading').classList.add('hidden');
         };
 
         document.getElementById('change-pass-form').onsubmit = async (e) => {
             e.preventDefault();
             const n1 = document.getElementById('new-pass').value;
-            const n2 = document.getElementById('confirm-pass').value;
-            
-            if(n1 !== n2) return alert("As palavras-passe não coincidem.");
-            if(n1 === "123456") return alert("Escolha uma palavra-passe diferente da original.");
-
-            const userIdx = state.users.findIndex(u => u.login === state.currentUser.login);
-            // +2 pular header e 1-based index
-            const row = userIdx + 2; 
-
-            await postData({ action: 'updatePassword', row, newPassword: n1 });
+            if(n1 !== document.getElementById('confirm-pass').value) return alert("Erro.");
+            await postData({ action: 'updatePassword', row: state.users.findIndex(u => u.login === state.currentUser.login) + 2, newPassword: n1 });
             document.getElementById('password-change-screen').classList.add('hidden');
             enterApp();
         };
 
         function enterApp() {
             document.getElementById('auth-screen').classList.add('hidden');
-            const app = document.getElementById('app-content');
-            app.classList.remove('hidden');
-            setTimeout(() => app.classList.add('opacity-100'), 50);
+            document.getElementById('app-content').classList.remove('hidden');
+            setTimeout(() => document.getElementById('app-content').classList.add('opacity-100'), 50);
             renderAll();
         }
 
-        window.deleteRow = (sheet, row) => { 
-            // row já vem como idx + 1, e o script adiciona +1 para o header
-            if(confirm("Deseja eliminar este registo permanentemente?")) postData({ action: 'delete', sheet, row }); 
-        };
+        window.deleteRow = (sheet, row) => { if(confirm("Deseja eliminar este registo permanentemente?")) postData({ action: 'delete', sheet, row: row + (sheet === 'Vendas' ? 0 : 0) }); };
 
         const showToast = (msg) => {
             const t = document.getElementById('toast');
             document.getElementById('toast-content').innerText = msg;
             t.classList.remove('opacity-0', 'translate-y-[-100px]');
             t.classList.add('opacity-100', 'translate-y-0');
-            setTimeout(() => { 
-                t.classList.add('opacity-0', 'translate-y-[-100px]');
-                t.classList.remove('opacity-100', 'translate-y-0');
-            }, 3000);
+            setTimeout(() => { t.classList.add('opacity-0', 'translate-y-[-100px]'); }, 3000);
         };
 
         window.searchTable = (id, val) => {
