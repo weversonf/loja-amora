@@ -71,7 +71,6 @@
         .syncing { animation: spin 2s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        /* Esconder scrollbars */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
@@ -162,7 +161,10 @@
             <!-- VISTA: ESTOQUE -->
             <div id="view-inventory" class="tab-view hidden space-y-6">
                 <div class="flex flex-col md:flex-row justify-between gap-4">
-                    <input type="text" oninput="searchTable('inv-list', this.value)" placeholder="Filtrar por nome..." class="flex-1 px-6 py-4 bg-white border border-gray-100 rounded-2xl outline-none shadow-sm focus:ring-2 focus:ring-vinho/10">
+                    <div class="relative flex-1">
+                        <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                        <input type="text" oninput="searchTable('inv-list', this.value)" placeholder="Filtrar por nome..." class="w-full pl-12 pr-6 py-4 bg-white border border-gray-100 rounded-2xl outline-none shadow-sm focus:ring-2 focus:ring-vinho/10">
+                    </div>
                     <button onclick="openProductModal()" class="btn-primary px-10 py-4 rounded-2xl font-bold">Novo Artigo</button>
                 </div>
                 <div class="glass-card overflow-hidden">
@@ -257,7 +259,7 @@
                     <span class="text-xs font-bold text-vinho uppercase">Total da Venda</span>
                     <span id="s-total-view" class="text-3xl font-serif text-vinho font-bold">R$ 0,00</span>
                 </div>
-                <button type="submit" class="w-full btn-primary py-5 rounded-2xl font-bold text-xl mt-4">Confirmar</button>
+                <button type="submit" id="btn-submit-sale" class="w-full btn-primary py-5 rounded-2xl font-bold text-xl mt-4">Confirmar</button>
                 <button type="button" onclick="closeModal()" class="w-full text-gray-400 text-sm font-medium">Cancelar</button>
             </form>
         </div>
@@ -306,14 +308,26 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxVXjw7pHV-37ttvxSwR4NF284dm5ARtIN-tojACIRHZqqOYLvMxN6fpSUMyVxuYoK8/exec";
         let state = { products: [], customers: [], sales: [], users: [], currentUser: null };
 
-        // Função para converter valores da planilha (com vírgula ou símbolos) em números válidos para o JS
+        // Função robusta para converter valores da planilha em números JS
         const parseCurrency = (val) => {
             if (val === undefined || val === null || val === "") return 0;
             if (typeof val === 'number') return val;
-            // Remove R$, espaços e converte vírgula para ponto (para o padrão JS)
-            let clean = String(val).replace(/R\$/g, '').replace(/\s/g, '').replace(/\./g, '').replace(',', '.');
-            let num = parseFloat(clean);
+            
+            let clean = String(val).replace(/R\$/g, '').replace(/\s/g, '');
+            // Se o valor tiver vírgula e ponto (1.234,56), remove o ponto e troca a vírgula
+            if (clean.includes(',') && clean.includes('.')) {
+                clean = clean.replace(/\./g, '').replace(',', '.');
+            } else {
+                // Se só tiver vírgula (1234,56), troca para ponto
+                clean = clean.replace(',', '.');
+            }
+            
+            const num = parseFloat(clean);
             return isNaN(num) ? 0 : num;
+        };
+
+        const formatCurrency = (val) => {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseCurrency(val));
         };
 
         // --- LÓGICA DE DADOS ---
@@ -328,6 +342,7 @@
                 renderAll();
             } catch (e) {
                 console.error("Erro na leitura:", e);
+                showToast("Erro ao sincronizar dados.");
             }
             if(icon) icon.classList.remove('syncing');
         };
@@ -335,11 +350,17 @@
         const postData = async (payload) => {
             showToast("Sincronizando com a planilha...");
             try {
-                await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-                showToast("Sucesso!");
-                setTimeout(fetchData, 1500);
+                await fetch(SCRIPT_URL, { 
+                    method: 'POST', 
+                    mode: 'no-cors', 
+                    body: JSON.stringify(payload) 
+                });
+                showToast("Sucesso ao gravar!");
+                // Aguarda um pouco antes de atualizar para garantir que a planilha processou o append
+                setTimeout(fetchData, 1800);
             } catch (e) {
-                showToast("Erro na gravação.");
+                showToast("Erro na ligação com a planilha.");
+                console.error(e);
             }
         };
 
@@ -353,6 +374,7 @@
             
             const labels = { dashboard: 'Dashboard', inventory: 'Estoque', customers: 'Clientes', sales: 'Vendas' };
             document.getElementById('page-title').innerText = labels[id];
+            lucide.createIcons();
         };
 
         const openModal = (id) => {
@@ -362,14 +384,16 @@
             if(id === 'modal-sale') updateSaleSelects();
         };
 
-        const closeModal = () => document.getElementById('modal-container').classList.add('hidden');
+        const closeModal = () => {
+            document.getElementById('modal-container').classList.add('hidden');
+        };
 
         const updateSaleSelects = () => {
             const pSel = document.getElementById('s-prod');
             const cSel = document.getElementById('s-cust');
             
             pSel.innerHTML = '<option value="">Escolha um artigo...</option>' + 
-                state.products.map((p, i) => `<option value="${i}">${p.name} (R$ ${parseCurrency(p.price).toFixed(2)})</option>`).join('');
+                state.products.map((p, i) => `<option value="${i}">${p.name} (${formatCurrency(p.price)})</option>`).join('');
             
             cSel.innerHTML = '<option value="">Cliente Ocasional</option>' + 
                 state.customers.map((c, i) => `<option value="${i}">${c.name}</option>`).join('');
@@ -385,7 +409,7 @@
                 return;
             }
             const total = parseCurrency(state.products[pIdx].price) * Number(qty);
-            totalEl.innerText = `R$ ${total.toFixed(2)}`;
+            totalEl.innerText = formatCurrency(total);
         };
 
         // --- FORMULÁRIOS ---
@@ -394,14 +418,19 @@
             e.preventDefault();
             const pIdx = document.getElementById('s-prod').value;
             const cIdx = document.getElementById('s-cust').value;
+            
+            if (pIdx === "") return alert("Selecione um produto.");
+            
             const prod = state.products[pIdx];
             const qty = parseInt(document.getElementById('s-qty').value);
             
-            if(!prod) return;
-            if(parseCurrency(prod.stock) < qty) return alert("Estoque insuficiente!");
+            if(parseCurrency(prod.stock) < qty) {
+                return alert(`Estoque insuficiente! Disponível: ${prod.stock}`);
+            }
 
             const total = parseCurrency(prod.price) * qty;
-            const profit = (parseCurrency(prod.price) - parseCurrency(prod.cost)) * qty;
+            const costTotal = parseCurrency(prod.cost) * qty;
+            const profit = total - costTotal;
 
             const data = [
                 new Date().toLocaleString('pt-BR'), 
@@ -413,13 +442,21 @@
                 ""
             ];
             
-            postData({ action: 'addSale', data: data, productIndex: pIdx, qty: qty });
+            postData({ 
+                action: 'addSale', 
+                data: data, 
+                productIndex: pIdx, 
+                qty: qty 
+            });
+            
             closeModal();
+            e.target.reset();
         };
 
         window.openProductModal = (idx = null) => {
             const form = document.getElementById('form-product');
             form.reset();
+            // idx + 2: 1 para cabeçalho, 1 para ser 1-based index (ex: idx 0 vira linha 2)
             document.getElementById('p-row').value = idx !== null ? idx + 2 : ""; 
             
             if(idx !== null) {
@@ -438,13 +475,18 @@
             const row = document.getElementById('p-row').value;
             const data = [
                 document.getElementById('p-name').value, 
-                parseFloat(document.getElementById('p-cost').value), 
-                parseFloat(document.getElementById('p-price').value), 
-                parseInt(document.getElementById('p-stock').value), 
-                parseInt(document.getElementById('p-min').value)
+                parseFloat(document.getElementById('p-cost').value || 0), 
+                parseFloat(document.getElementById('p-price').value || 0), 
+                parseInt(document.getElementById('p-stock').value || 0), 
+                parseInt(document.getElementById('p-min').value || 0)
             ];
-            postData({ action: 'addProduct', data: data, row: row ? parseInt(row) : null });
+            postData({ 
+                action: 'addProduct', 
+                data: data, 
+                row: row ? parseInt(row) : null 
+            });
             closeModal();
+            e.target.reset();
         };
 
         document.getElementById('form-customer').onsubmit = (e) => {
@@ -456,27 +498,28 @@
             ];
             postData({ action: 'addCustomer', data: data });
             closeModal();
+            e.target.reset();
         };
 
         // --- RENDERIZAÇÃO ---
 
         const renderAll = () => {
             // Dashboard
-            const revenue = state.sales.reduce((a, b) => a + parseCurrency(b.total || 0), 0);
-            const profit = state.sales.reduce((a, b) => a + parseCurrency(b.profit || 0), 0);
+            const revenue = state.sales.reduce((a, b) => a + parseCurrency(b.total), 0);
+            const profit = state.sales.reduce((a, b) => a + parseCurrency(b.profit), 0);
             const low = state.products.filter(p => parseCurrency(p.stock) <= parseCurrency(p.minStock)).length;
             
-            document.getElementById('dash-rev').innerText = `R$ ${revenue.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-            document.getElementById('dash-profit').innerText = `R$ ${profit.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('dash-rev').innerText = formatCurrency(revenue);
+            document.getElementById('dash-profit').innerText = formatCurrency(profit);
             document.getElementById('dash-low').innerText = low;
 
             // Stats Pagamento
             const pays = { Pix: 0, Cartão: 0, Dinheiro: 0 };
-            state.sales.forEach(s => pays[s.payment] = (pays[s.payment] || 0) + parseCurrency(s.total || 0));
+            state.sales.forEach(s => pays[s.payment] = (pays[s.payment] || 0) + parseCurrency(s.total));
             document.getElementById('payment-stats').innerHTML = Object.entries(pays).map(([k,v]) => `
                 <div class="flex justify-between items-center p-4 rounded-2xl bg-gray-50 border border-gray-100">
                     <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">${k}</span>
-                    <span class="font-serif italic text-vinho font-bold text-lg">R$ ${v.toFixed(2)}</span>
+                    <span class="font-serif italic text-vinho font-bold text-lg">${formatCurrency(v)}</span>
                 </div>
             `).join('');
 
@@ -484,7 +527,8 @@
             const currentMonth = new Date().getMonth();
             const bdays = state.customers.filter(c => {
                 if(!c.birth) return false;
-                return new Date(c.birth).getUTCMonth() === currentMonth;
+                const d = new Date(c.birth);
+                return !isNaN(d.getTime()) && d.getUTCMonth() === currentMonth;
             });
             document.getElementById('bday-list').innerHTML = bdays.map(c => `
                 <div class="flex justify-between items-center p-4 bg-vinho-light rounded-2xl">
@@ -497,11 +541,11 @@
             document.getElementById('inv-list').innerHTML = state.products.map((p, i) => `
                 <tr class="hover:bg-gray-50/50">
                     <td class="px-8 py-5 font-bold text-gray-700 text-sm">${p.name}</td>
-                    <td class="px-8 py-5 text-gray-400 text-xs font-mono">R$ ${parseCurrency(p.cost).toFixed(2)}</td>
-                    <td class="px-8 py-5 font-serif italic text-vinho">R$ ${parseCurrency(p.price).toFixed(2)}</td>
+                    <td class="px-8 py-5 text-gray-400 text-xs font-mono">${formatCurrency(p.cost)}</td>
+                    <td class="px-8 py-5 font-serif italic text-vinho">${formatCurrency(p.price)}</td>
                     <td class="px-8 py-5 text-center ${parseCurrency(p.stock) <= parseCurrency(p.minStock) ? 'text-red-500 font-bold' : 'text-gray-500'}">${p.stock}</td>
                     <td class="px-8 py-5 text-right flex justify-end gap-3">
-                        <button onclick="openProductModal(${i})" class="text-gray-200 hover:text-vinho transition-colors"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                        <button onclick="openProductModal(${i})" class="text-gray-200 hover:text-vinho transition-colors"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
                         <button onclick="deleteRow('Estoque', ${i+1})" class="text-gray-100 hover:text-red-500 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </td>
                 </tr>
@@ -511,7 +555,7 @@
                 <tr>
                     <td class="px-8 py-5 font-bold text-sm text-gray-700">${c.name}</td>
                     <td class="px-8 py-5 text-xs text-vinho font-bold uppercase tracking-widest">${c.phone}</td>
-                    <td class="px-8 py-5 text-right"><button onclick="deleteRow('Clientes', ${i+1})" class="text-gray-100 hover:text-red-500"><i data-lucide="user-minus" class="w-4 h-4"></i></button></td>
+                    <td class="px-8 py-5 text-right"><button onclick="deleteRow('Clientes', ${i+1})" class="text-gray-100 hover:text-red-500 transition-colors"><i data-lucide="user-minus" class="w-4 h-4"></i></button></td>
                 </tr>
             `).join('');
 
@@ -519,8 +563,8 @@
                 <tr class="group hover:bg-vinho-light/30 transition-colors">
                     <td class="px-8 py-5 text-[10px] text-gray-300 font-mono">${s.date}</td>
                     <td class="px-8 py-5 text-sm font-bold text-gray-800">${s.product}</td>
-                    <td class="px-8 py-5 text-xs text-gray-400 font-bold">${s.customer}</td>
-                    <td class="px-8 py-5 text-right font-serif italic text-vinho text-lg font-bold">R$ ${parseCurrency(s.total).toFixed(2)}</td>
+                    <td class="px-8 py-4 text-xs text-gray-400 font-bold">${s.customer}</td>
+                    <td class="px-8 py-5 text-right font-serif italic text-vinho text-lg font-bold">${formatCurrency(s.total)}</td>
                 </tr>
             `).join('');
             
@@ -545,7 +589,7 @@
                 const valid = state.users.find(u => u.login === login && u.pass === pass);
 
                 if(valid || (login === "admin" && pass === "amora")) {
-                    state.currentUser = valid || { login: "admin", pass: "amora" };
+                    state.currentUser = valid || { login: "admin", pass: "amora", name: "Administrador" };
                     if(pass === "123456") {
                         document.getElementById('auth-screen').classList.add('hidden');
                         document.getElementById('password-change-screen').classList.remove('hidden');
@@ -553,10 +597,10 @@
                         enterApp();
                     }
                 } else { 
-                    alert("Credenciais incorrectas."); 
+                    alert("Credenciais incorretas."); 
                 }
             } catch(e) { 
-                alert("Falha na ligação com o servidor."); 
+                alert("Falha na ligação com o servidor. Verifique a ligação à internet."); 
             } finally {
                 loading.classList.add('hidden');
             }
@@ -571,6 +615,7 @@
             if(n1 === "123456") return alert("Escolha uma palavra-passe diferente da original.");
 
             const userIdx = state.users.findIndex(u => u.login === state.currentUser.login);
+            // +2 pular header e 1-based index
             const row = userIdx + 2; 
 
             await postData({ action: 'updatePassword', row, newPassword: n1 });
@@ -587,7 +632,8 @@
         }
 
         window.deleteRow = (sheet, row) => { 
-            if(confirm("Deseja eliminar este registo?")) postData({ action: 'delete', sheet, row }); 
+            // row já vem como idx + 1, e o script adiciona +1 para o header
+            if(confirm("Deseja eliminar este registo permanentemente?")) postData({ action: 'delete', sheet, row }); 
         };
 
         const showToast = (msg) => {
