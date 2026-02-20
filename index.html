@@ -115,8 +115,29 @@
             <div class="glass-card p-10 shadow-2xl border border-gray-50">
                 <form id="login-form" class="space-y-6">
                     <p class="text-xs uppercase tracking-widest text-gray-400 font-bold mb-2">Acesso Restrito</p>
-                    <input type="password" id="auth-pass" placeholder="Senha da Boutique" class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-vinho/20 text-center text-lg transition-all">
-                    <button type="submit" class="w-full btn-primary py-4 rounded-2xl font-bold text-lg shadow-xl">Entrar no Painel</button>
+                    <div class="space-y-3">
+                        <input type="text" id="auth-user" placeholder="Login" class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-vinho/20 text-center text-lg transition-all">
+                        <input type="password" id="auth-pass" placeholder="Senha" class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-vinho/20 text-center text-lg transition-all">
+                    </div>
+                    <button type="submit" id="btn-login" class="w-full btn-primary py-4 rounded-2xl font-bold text-lg shadow-xl disabled:opacity-50">
+                        Entrar no Painel
+                    </button>
+                    <p id="login-loading" class="text-[10px] text-gray-400 animate-pulse hidden">Validando credenciais na planilha...</p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forced Password Change Screen -->
+    <div id="password-change-screen" class="fixed inset-0 z-[110] bg-[#fdfbfc] flex items-center justify-center p-6 hidden">
+        <div class="w-full max-w-sm text-center">
+            <div class="glass-card p-10 shadow-2xl border border-gray-50">
+                <h2 class="text-2xl font-serif text-vinho italic mb-4">Segurança Amora</h2>
+                <p class="text-sm text-gray-500 mb-8 leading-relaxed">Você está usando a senha padrão. Por favor, escolha uma nova senha para continuar.</p>
+                <form id="change-pass-form" class="space-y-4">
+                    <input type="password" id="new-pass" placeholder="Nova Senha" required class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-vinho/20 text-center text-lg">
+                    <input type="password" id="confirm-pass" placeholder="Confirmar Senha" required class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 focus:outline-none focus:ring-2 focus:ring-vinho/20 text-center text-lg">
+                    <button type="submit" class="w-full btn-primary py-4 rounded-2xl font-bold text-lg">Salvar e Entrar</button>
                 </form>
             </div>
         </div>
@@ -345,25 +366,29 @@
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxVXjw7pHV-37ttvxSwR4NF284dm5ARtIN-tojACIRHZqqOYLvMxN6fpSUMyVxuYoK8/exec";
         
-        let state = { products: [], customers: [], sales: [] };
+        let state = { products: [], customers: [], sales: [], users: [], currentUser: null };
 
         const fetchData = async () => {
             const icon = document.getElementById('sync-icon');
             const text = document.getElementById('sync-text');
-            icon.classList.add('syncing');
-            text.innerText = "Sincronizando...";
+            if(icon) icon.classList.add('syncing');
+            if(text) text.innerText = "Sincronizando...";
 
             try {
                 const response = await fetch(SCRIPT_URL + "?action=read");
                 const data = await response.json();
-                state = data;
+                state.products = data.products;
+                state.customers = data.customers;
+                state.sales = data.sales;
+                state.users = data.users;
+                
                 renderAll();
-                text.innerText = "Sincronizado";
+                if(text) text.innerText = "Sincronizado";
             } catch (e) {
                 console.error("Erro:", e);
-                text.innerText = "Erro de Sincronia";
+                if(text) text.innerText = "Erro de Sincronia";
             }
-            icon.classList.remove('syncing');
+            if(icon) icon.classList.remove('syncing');
         };
 
         const postData = async (payload) => {
@@ -506,62 +531,81 @@
             const profit = state.sales.reduce((a, b) => a + Number(b.profit || 0), 0);
             const low = state.products.filter(p => Number(p.stock) <= Number(p.minStock)).length;
             
-            document.getElementById('dash-rev').innerText = `R$ ${revenue.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-            document.getElementById('dash-profit').innerText = `R$ ${profit.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-            document.getElementById('dash-low').innerText = low;
+            const revEl = document.getElementById('dash-rev');
+            const profEl = document.getElementById('dash-profit');
+            const lowEl = document.getElementById('dash-low');
+
+            if(revEl) revEl.innerText = `R$ ${revenue.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            if(profEl) profEl.innerText = `R$ ${profit.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            if(lowEl) lowEl.innerText = low;
 
             // Pagamentos
             const pays = { Pix: 0, Cartão: 0, Dinheiro: 0 };
             state.sales.forEach(s => pays[s.payment] = (pays[s.payment] || 0) + Number(s.total));
-            document.getElementById('payment-stats').innerHTML = Object.entries(pays).map(([k,v]) => `
-                <div class="flex justify-between items-center p-4 rounded-2xl bg-gray-50 border border-gray-100">
-                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">${k}</span>
-                    <span class="font-serif italic text-vinho font-bold">R$ ${v.toFixed(2)}</span>
-                </div>
-            `).join('');
+            const payStatsEl = document.getElementById('payment-stats');
+            if(payStatsEl) {
+                payStatsEl.innerHTML = Object.entries(pays).map(([k,v]) => `
+                    <div class="flex justify-between items-center p-4 rounded-2xl bg-gray-50 border border-gray-100">
+                        <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">${k}</span>
+                        <span class="font-serif italic text-vinho font-bold">R$ ${v.toFixed(2)}</span>
+                    </div>
+                `).join('');
+            }
 
             // Bdays
             const month = new Date().getMonth();
             const bdays = state.customers.filter(c => c.birth && new Date(c.birth).getUTCMonth() === month);
-            document.getElementById('bday-list').innerHTML = bdays.map(c => `
-                <div class="flex justify-between items-center p-4 bg-vinho-light rounded-2xl">
-                    <span class="text-sm font-semibold text-gray-700 font-serif italic">${c.name}</span>
-                    <a href="https://wa.me/55${c.phone.replace(/\D/g,'')}" target="_blank" class="px-5 py-2 bg-vinho text-white rounded-full text-[10px] font-bold shadow-lg">WhatsApp</a>
-                </div>
-            `).join('') || '<p class="text-center text-gray-300 italic text-sm">Nenhum aniversário.</p>';
+            const bdayListEl = document.getElementById('bday-list');
+            if(bdayListEl) {
+                bdayListEl.innerHTML = bdays.map(c => `
+                    <div class="flex justify-between items-center p-4 bg-vinho-light rounded-2xl">
+                        <span class="text-sm font-semibold text-gray-700 font-serif italic">${c.name}</span>
+                        <a href="https://wa.me/55${c.phone.replace(/\D/g,'')}" target="_blank" class="px-5 py-2 bg-vinho text-white rounded-full text-[10px] font-bold shadow-lg">WhatsApp</a>
+                    </div>
+                `).join('') || '<p class="text-center text-gray-300 italic text-sm">Nenhum aniversário.</p>';
+            }
 
             // Tabelas
-            document.getElementById('inv-list').innerHTML = state.products.map((p, i) => `
-                <tr>
-                    <td class="px-8 py-5 font-bold text-gray-700 text-sm">${p.name}</td>
-                    <td class="px-8 py-5 text-xs text-gray-300">R$ ${Number(p.cost).toFixed(2)}</td>
-                    <td class="px-8 py-5 font-serif italic font-bold text-vinho">R$ ${Number(p.price).toFixed(2)}</td>
-                    <td class="px-8 py-5 text-center"><span class="${Number(p.stock) <= Number(p.minStock) ? 'text-red-500 font-bold' : ''}">${p.stock}</span></td>
-                    <td class="px-8 py-5 text-right"><button onclick="deleteRow('Estoque', ${i+1})" class="text-gray-100 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td>
-                </tr>
-            `).join('');
+            const invListEl = document.getElementById('inv-list');
+            if(invListEl) {
+                invListEl.innerHTML = state.products.map((p, i) => `
+                    <tr>
+                        <td class="px-8 py-5 font-bold text-gray-700 text-sm">${p.name}</td>
+                        <td class="px-8 py-5 text-xs text-gray-300">R$ ${Number(p.cost).toFixed(2)}</td>
+                        <td class="px-8 py-5 font-serif italic font-bold text-vinho">R$ ${Number(p.price).toFixed(2)}</td>
+                        <td class="px-8 py-5 text-center"><span class="${Number(p.stock) <= Number(p.minStock) ? 'text-red-500 font-bold' : ''}">${p.stock}</span></td>
+                        <td class="px-8 py-5 text-right"><button onclick="deleteRow('Estoque', ${i+1})" class="text-gray-100 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td>
+                    </tr>
+                `).join('');
+            }
 
-            document.getElementById('cust-list').innerHTML = state.customers.map((c, i) => `
-                <tr>
-                    <td class="px-8 py-5 font-bold text-sm text-gray-700">${c.name}</td>
-                    <td class="px-8 py-5"><a href="https://wa.me/55${c.phone.replace(/\D/g,'')}" target="_blank" class="text-xs text-vinho font-bold">Enviar Whats</a></td>
-                    <td class="px-8 py-5 text-xs text-gray-400">${c.birth ? new Date(c.birth).toLocaleDateString('pt-BR') : '--'}</td>
-                    <td class="px-8 py-5 text-right"><button onclick="deleteRow('Clientes', ${i+1})" class="text-gray-100 hover:text-red-500"><i data-lucide="user-minus" class="w-4 h-4"></i></button></td>
-                </tr>
-            `).join('');
+            const custListEl = document.getElementById('cust-list');
+            if(custListEl) {
+                custListEl.innerHTML = state.customers.map((c, i) => `
+                    <tr>
+                        <td class="px-8 py-5 font-bold text-sm text-gray-700">${c.name}</td>
+                        <td class="px-8 py-5"><a href="https://wa.me/55${c.phone.replace(/\D/g,'')}" target="_blank" class="text-xs text-vinho font-bold">Enviar Whats</a></td>
+                        <td class="px-8 py-5 text-xs text-gray-400">${c.birth ? new Date(c.birth).toLocaleDateString('pt-BR') : '--'}</td>
+                        <td class="px-8 py-5 text-right"><button onclick="deleteRow('Clientes', ${i+1})" class="text-gray-100 hover:text-red-500"><i data-lucide="user-minus" class="w-4 h-4"></i></button></td>
+                    </tr>
+                `).join('');
+            }
 
-            document.getElementById('sale-history').innerHTML = [...state.sales].reverse().map(s => `
-                <tr>
-                    <td class="px-8 py-5 text-[10px] text-gray-300 font-mono">${s.date}</td>
-                    <td class="px-8 py-5">
-                        <div class="font-bold text-sm text-gray-800">${s.product}</div>
-                        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">${s.customer}</div>
-                        ${s.note ? `<div class="text-[10px] text-vinho italic mt-1 bg-white/50 px-2 py-0.5 rounded-full inline-block">"${s.note}"</div>` : ''}
-                    </td>
-                    <td class="px-8 py-5"><span class="text-[10px] font-bold text-gray-400 uppercase">${s.payment}</span></td>
-                    <td class="px-8 py-5 text-right font-serif italic font-bold text-vinho text-lg">R$ ${Number(s.total).toFixed(2)}</td>
-                </tr>
-            `).join('');
+            const saleHistoryEl = document.getElementById('sale-history');
+            if(saleHistoryEl) {
+                saleHistoryEl.innerHTML = [...state.sales].reverse().map(s => `
+                    <tr>
+                        <td class="px-8 py-5 text-[10px] text-gray-300 font-mono">${s.date}</td>
+                        <td class="px-8 py-5">
+                            <div class="font-bold text-sm text-gray-800">${s.product}</div>
+                            <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">${s.customer}</div>
+                            ${s.note ? `<div class="text-[10px] text-vinho italic mt-1 bg-white/50 px-2 py-0.5 rounded-full inline-block">"${s.note}"</div>` : ''}
+                        </td>
+                        <td class="px-8 py-5"><span class="text-[10px] font-bold text-gray-400 uppercase">${s.payment}</span></td>
+                        <td class="px-8 py-5 text-right font-serif italic font-bold text-vinho text-lg">R$ ${Number(s.total).toFixed(2)}</td>
+                    </tr>
+                `).join('');
+            }
 
             lucide.createIcons();
         };
@@ -589,24 +633,95 @@
         };
 
         // Auth
-        document.getElementById('login-form').onsubmit = (e) => {
+        document.getElementById('login-form').onsubmit = async (e) => {
             e.preventDefault();
-            if(document.getElementById('auth-pass').value === 'amora' || document.getElementById('auth-pass').value === '') {
-                const scr = document.getElementById('auth-screen');
-                const app = document.getElementById('app-content');
-                scr.style.opacity = '0';
-                setTimeout(() => {
-                    scr.classList.add('hidden');
-                    app.classList.remove('hidden');
-                    setTimeout(() => app.style.opacity = '1', 50);
-                    fetchData();
-                }, 700);
-            } else {
-                alert("Senha inválida");
+            const loginInput = document.getElementById('auth-user').value.trim();
+            const passInput = document.getElementById('auth-pass').value;
+            const btn = document.getElementById('btn-login');
+            const loadingMsg = document.getElementById('login-loading');
+
+            btn.disabled = true;
+            loadingMsg.classList.remove('hidden');
+
+            try {
+                const response = await fetch(SCRIPT_URL + "?action=read");
+                const data = await response.json();
+                state.users = data.users;
+                state.products = data.products;
+                state.customers = data.customers;
+                state.sales = data.sales;
+                
+                // Validação baseada na coluna B (login) e C (senha)
+                const validUser = state.users.find(u => u.login === loginInput && u.pass === passInput);
+
+                if(validUser || (loginInput === "" && passInput === "amora")) {
+                    const authUser = validUser || { login: "", pass: "amora", name: "Admin" };
+                    state.currentUser = authUser;
+
+                    // Verifica se a senha é a padrão "123456"
+                    if (passInput === "123456") {
+                        document.getElementById('auth-screen').classList.add('hidden');
+                        document.getElementById('password-change-screen').classList.remove('hidden');
+                    } else {
+                        enterApp();
+                    }
+                } else {
+                    alert("Login ou senha incorretos.");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Erro ao conectar com a planilha.");
+            } finally {
+                btn.disabled = false;
+                loadingMsg.classList.add('hidden');
             }
         };
 
-        window.addEventListener('DOMContentLoaded', () => lucide.createIcons());
+        // Troca de Senha
+        document.getElementById('change-pass-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const newPass = document.getElementById('new-pass').value;
+            const confirmPass = document.getElementById('confirm-pass').value;
+
+            if (newPass.length < 4) return alert("A senha deve ter pelo menos 4 caracteres.");
+            if (newPass !== confirmPass) return alert("As senhas não coincidem.");
+            if (newPass === "123456") return alert("Por favor, escolha uma senha diferente da padrão.");
+
+            // Envia para a planilha
+            const userIdx = state.users.findIndex(u => u.login === state.currentUser.login);
+            // userIdx + 2 porque: +1 para 1-based index e +1 para pular o cabeçalho
+            const rowIndex = userIdx + 2;
+
+            showToast("Atualizando senha...");
+            try {
+                await postData({ 
+                    action: 'updatePassword', 
+                    row: rowIndex, 
+                    newPassword: newPass 
+                });
+                
+                document.getElementById('password-change-screen').classList.add('hidden');
+                enterApp();
+            } catch (e) {
+                alert("Erro ao atualizar senha.");
+            }
+        };
+
+        function enterApp() {
+            const scr = document.getElementById('auth-screen');
+            const app = document.getElementById('app-content');
+            scr.style.opacity = '0';
+            setTimeout(() => {
+                scr.classList.add('hidden');
+                app.classList.remove('hidden');
+                setTimeout(() => app.style.opacity = '1', 50);
+                renderAll();
+            }, 700);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
     </script>
 </body>
 </html>
