@@ -3,172 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Amora - Boutique Management</title>
+    <title>Amora - Catálogo Online</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
     <style>
         :root { --vinho: #611624; --vinho-light: #fdf2f4; --vinho-hover: #4a101b; }
-        body { font-family: 'Inter', sans-serif; background-color: #fdfbfc; color: #1a1a1a; overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; background-color: #fdfbfc; color: #1a1a1a; -webkit-tap-highlight-color: transparent; }
         .font-serif { font-family: 'Playfair Display', serif; }
-        .text-vinho { color: var(--vinho); }
-        .bg-vinho { background-color: var(--vinho); }
+        
+        /* Animação do Coração no Logo */
         @keyframes heartBeat { 0%, 100% { transform: rotate(12deg) scale(1); } 50% { transform: rotate(12deg) scale(1.3); } }
-        .logo-heart { display: inline-block; width: 14px; height: 14px; background-color: currentColor; clip-path: path('M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'); margin-left: 2px; transform: rotate(12deg); animation: heartBeat 2s infinite; }
-        .glass-card { background: white; border: 1px solid rgba(97, 22, 36, 0.05); border-radius: 28px; transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1); }
-        .btn-primary { background-color: var(--vinho); color: white; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(97, 22, 36, 0.2); }
-        .btn-primary:hover:not(:disabled) { background-color: var(--vinho-hover); transform: scale(1.02); }
-        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-        .nav-link.active { background: var(--vinho-light); color: var(--vinho); font-weight: 600; border-left: 4px solid var(--vinho); }
-        .tab-view { animation: slideUp 0.4s ease-out; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .syncing { animation: spin 2s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .logo-heart { 
+            display: inline-block; width: 14px; height: 14px; background-color: currentColor; 
+            clip-path: path('M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'); 
+            margin-left: 2px; transform: rotate(12deg); animation: heartBeat 2s infinite; 
+        }
+
+        /* Estilos de Cartões e UI */
+        .glass-card { background: white; border: 1px solid rgba(97, 22, 36, 0.05); border-radius: 28px; transition: all 0.3s ease; }
+        .product-card:active { transform: scale(0.98); }
+        
+        .out-of-stock { filter: grayscale(0.8); opacity: 0.6; pointer-events: none; }
+        .badge-esgotado {
+            position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.8); 
+            backdrop-filter: blur(4px); color: white; padding: 4px 12px; 
+            border-radius: 50px; font-size: 10px; font-weight: 800; text-transform: uppercase; z-index: 10;
+        }
+
+        /* Drawer do Carrinho */
+        #cart-drawer { transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); }
+        .cart-open #cart-drawer { transform: translateY(0); }
+        
+        /* Shimmer Loading */
+        .shimmer {
+            background: linear-gradient(90deg, #f6f7f8 25%, #edeef1 50%, #f6f7f8 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer { to { background-position: -200% 0; } }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="pb-20">
 
-    <!-- Auth Screen -->
-    <div id="auth-screen" class="fixed inset-0 z-[100] bg-white flex items-center justify-center p-6 transition-opacity duration-700">
-        <div class="w-full max-w-sm text-center">
-            <h1 class="text-7xl font-serif text-vinho mb-12 italic">amora<span class="logo-heart"></span></h1>
-            <div class="glass-card p-10 shadow-2xl border border-gray-50">
-                <form id="login-form" class="space-y-6">
-                    <p class="text-xs uppercase tracking-widest text-gray-400 font-bold">Acesso Restrito</p>
-                    <input type="text" id="auth-user" placeholder="Login" required class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 text-center text-lg focus:outline-none focus:ring-2 focus:ring-vinho/20">
-                    <input type="password" id="auth-pass" placeholder="Senha" required class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 text-center text-lg focus:outline-none focus:ring-2 focus:ring-vinho/20">
-                    <button type="submit" id="btn-login" class="w-full btn-primary py-4 rounded-2xl font-bold text-lg shadow-xl">Entrar</button>
-                    <p id="login-loading" class="text-xs text-gray-400 hidden animate-pulse">A validar...</p>
-                </form>
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-40 bg-white/90 backdrop-blur-lg border-b border-gray-50 px-6 py-4 flex justify-between items-center">
+        <h1 class="text-3xl font-serif text-[#611624] italic">amora<span class="logo-heart"></span></h1>
+        <button onclick="toggleCart()" class="relative p-2 text-[#611624]">
+            <i data-lucide="shopping-bag" class="w-7 h-7"></i>
+            <span id="cart-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
+        </button>
+    </nav>
+
+    <!-- Header & Procura -->
+    <header class="px-6 py-8">
+        <h2 class="text-4xl font-serif italic text-gray-800 leading-tight">Escolhas da <br><span class="text-[#611624]">Estação</span></h2>
+        <div class="mt-6 relative">
+            <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+            <input type="text" id="searchInput" oninput="renderCatalog()" placeholder="O que procuras?" 
+                   class="w-full pl-12 pr-6 py-4 bg-white border border-gray-100 rounded-2xl shadow-sm outline-none focus:ring-2 focus:ring-[#611624]/10">
+        </div>
+    </header>
+
+    <!-- Grelha de Produtos -->
+    <main id="catalog-grid" class="px-6 grid grid-cols-2 gap-4">
+        <!-- Esqueleto de carregamento -->
+        <div class="glass-card h-64 shimmer"></div>
+        <div class="glass-card h-64 shimmer"></div>
+    </main>
+
+    <!-- Gaveta do Carrinho -->
+    <div id="cart-overlay" class="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm hidden" onclick="toggleCart()"></div>
+    <div id="cart-drawer" class="fixed bottom-0 left-0 right-0 z-[110] bg-white rounded-t-[40px] shadow-2xl translate-y-full max-h-[85vh] flex flex-col">
+        <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mt-4 mb-2"></div>
+        <div class="px-8 py-6 flex justify-between items-center">
+            <h3 class="text-2xl font-serif italic text-[#611624]">Tua Sacola</h3>
+            <button onclick="toggleCart()" class="text-gray-400 p-2"><i data-lucide="x"></i></button>
+        </div>
+        
+        <div id="cart-items" class="flex-1 overflow-y-auto px-8 py-2 space-y-6">
+            <!-- Itens injetados via JS -->
+        </div>
+
+        <div class="p-8 border-t border-gray-50 space-y-4">
+            <div class="flex justify-between items-center text-lg font-serif">
+                <span class="text-gray-400 italic">Total Estimado</span>
+                <span id="cart-total" class="text-[#611624] font-bold">R$ 0,00</span>
             </div>
+            <button onclick="sendOrder()" class="w-full bg-[#611624] text-white py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 active:scale-95 transition-transform">
+                <i data-lucide="send" class="w-5 h-5"></i> Encomendar no WhatsApp
+            </button>
         </div>
     </div>
 
-    <!-- Password Change -->
-    <div id="password-change-screen" class="fixed inset-0 z-[110] bg-white flex items-center justify-center p-6 hidden">
-        <div class="w-full max-w-sm text-center">
-            <div class="glass-card p-10 shadow-2xl border border-gray-50">
-                <h2 class="text-2xl font-serif text-vinho mb-4">Segurança Amora</h2>
-                <form id="change-pass-form" class="space-y-4">
-                    <input type="password" id="new-pass" placeholder="Nova Senha" required class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 text-center">
-                    <input type="password" id="confirm-pass" placeholder="Confirmar" required class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 text-center">
-                    <button type="submit" class="w-full btn-primary py-4 rounded-2xl font-bold">Gravar</button>
-                </form>
-            </div>
-        </div>
+    <!-- Notificação de Toast -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[120] opacity-0 transition-all translate-y-10">
+        <div class="bg-[#611624] text-white px-8 py-3 rounded-full shadow-2xl font-medium text-sm">Adicionado à sacola!</div>
     </div>
-
-    <!-- Main Content -->
-    <div id="app-content" class="hidden flex flex-col md:flex-row min-h-screen">
-        <nav class="fixed bottom-0 left-0 right-0 md:static md:w-72 bg-white border-r border-gray-100 p-4 md:p-8 flex flex-row md:flex-col gap-2 z-50">
-            <div class="hidden md:block mb-12"><h1 class="text-4xl font-serif text-vinho italic">amora<span class="logo-heart"></span></h1></div>
-            <button onclick="showTab('dashboard')" class="nav-link active flex-1 md:flex-none flex items-center justify-center md:justify-start gap-4 p-4 rounded-2xl text-xs md:text-sm" id="tab-dashboard"><i data-lucide="layout-grid" class="w-5 h-5"></i> <span class="hidden md:inline">Dashboard</span></button>
-            <button onclick="showTab('inventory')" class="nav-link flex-1 md:flex-none flex items-center justify-center md:justify-start gap-4 p-4 rounded-2xl text-xs md:text-sm" id="tab-inventory"><i data-lucide="package" class="w-5 h-5"></i> <span class="hidden md:inline">Estoque</span></button>
-            <button onclick="showTab('customers')" class="nav-link flex-1 md:flex-none flex items-center justify-center md:justify-start gap-4 p-4 rounded-2xl text-xs md:text-sm" id="tab-customers"><i data-lucide="users" class="w-5 h-5"></i> <span class="hidden md:inline">Clientes</span></button>
-            <button onclick="showTab('sales')" class="nav-link flex-1 md:flex-none flex items-center justify-center md:justify-start gap-4 p-4 rounded-2xl text-xs md:text-sm" id="tab-sales"><i data-lucide="receipt" class="w-5 h-5"></i> <span class="hidden md:inline">Vendas</span></button>
-        </nav>
-
-        <main class="flex-1 p-6 md:p-12 pb-24 md:pb-12 overflow-y-auto">
-            <header class="flex justify-between items-center mb-10">
-                <div><h2 id="page-title" class="text-4xl font-serif italic">Dashboard</h2><div class="text-[10px] uppercase font-bold text-gray-400 flex items-center gap-2 mt-1"><i data-lucide="refresh-cw" id="sync-icon" class="w-3 h-3"></i> <span id="sync-text">Sincronizado</span></div></div>
-                <button onclick="openModal('modal-sale')" class="btn-primary px-8 py-3.5 rounded-full text-sm font-bold shadow-lg flex items-center gap-2"><i data-lucide="plus" class="w-5 h-5"></i> Venda</button>
-            </header>
-
-            <div id="view-dashboard" class="tab-view space-y-8">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="glass-card p-8"><p class="text-[11px] font-bold uppercase mb-2">Faturamento</p><h3 id="dash-rev" class="text-3xl font-serif text-vinho italic">R$ 0,00</h3></div>
-                    <div class="glass-card p-8"><p class="text-[11px] font-bold uppercase mb-2">Lucro</p><h3 id="dash-profit" class="text-3xl font-serif text-green-600 italic">R$ 0,00</h3></div>
-                    <div class="glass-card p-8"><p class="text-[11px] font-bold uppercase mb-2">Reposição</p><h3 id="dash-low" class="text-3xl font-serif text-red-500 italic">0</h3></div>
-                </div>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="glass-card p-8"><h4 class="font-serif text-xl mb-6 italic">Pagamentos</h4><div id="payment-stats" class="space-y-4"></div></div>
-                    <div class="glass-card p-8"><h4 class="font-serif text-xl mb-6 italic">Aniversariantes</h4><div id="bday-list" class="space-y-4"></div></div>
-                </div>
-            </div>
-
-            <div id="view-inventory" class="tab-view hidden space-y-6">
-                <div class="flex justify-between gap-4"><input type="text" oninput="searchTable('inv-list', this.value)" placeholder="Filtrar..." class="flex-1 px-6 py-4 bg-white border border-gray-100 rounded-2xl outline-none"><button onclick="openProductModal()" class="btn-primary px-10 py-4 rounded-2xl font-bold">Novo Artigo</button></div>
-                <div class="glass-card overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-left min-w-[700px]"><thead class="bg-gray-50 border-b"><tr><th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">Artigo</th><th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">Custo</th><th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">Venda</th><th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase text-center">Stock</th><th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase text-right">Ação</th></tr></thead><tbody id="inv-list" class="divide-y divide-gray-50"></tbody></table></div></div>
-            </div>
-
-            <div id="view-customers" class="tab-view hidden space-y-6">
-                <div class="flex justify-between gap-4"><input type="text" oninput="searchTable('cust-list', this.value)" placeholder="Buscar cliente..." class="flex-1 px-6 py-4 bg-white border border-gray-100 rounded-2xl outline-none"><button onclick="openModal('modal-customer')" class="btn-primary px-10 py-4 rounded-2xl font-bold">Cadastrar</button></div>
-                <div class="glass-card overflow-hidden"><table class="w-full text-left"><thead class="bg-gray-50 border-b"><tr><th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">Nome</th><th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">WhatsApp</th><th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase text-right">Ação</th></tr></thead><tbody id="cust-list" class="divide-y divide-gray-50"></tbody></table></div>
-            </div>
-
-            <div id="view-sales" class="tab-view hidden"><div class="glass-card overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-left min-w-[600px]"><thead class="bg-gray-50 border-b"><tr><th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">Data</th><th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">Produto</th><th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase">Cliente</th><th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase text-center">Total</th><th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase text-right">Ação</th></tr></thead><tbody id="sale-history" class="divide-y divide-gray-50"></tbody></table></div></div></div>
-        </main>
-    </div>
-
-    <!-- Modals -->
-    <div id="modal-container" class="hidden fixed inset-0 z-[120] bg-black/20 backdrop-blur-sm flex items-center justify-center p-4">
-        <div id="modal-sale" class="modal-box hidden bg-white w-full max-w-lg rounded-[32px] p-10 shadow-2xl">
-            <h3 class="text-3xl font-serif text-vinho mb-8 italic">Efetuar Venda</h3>
-            <form id="form-sale" class="space-y-4">
-                <input type="hidden" id="s-row">
-                <div class="space-y-1">
-                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">Produto</label>
-                    <select id="s-prod" required onchange="calcTotal()" class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100 outline-none"></select>
-                </div>
-                <div class="space-y-1">
-                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">Cliente</label>
-                    <select id="s-cust" class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100 outline-none"></select>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">Pagamento</label>
-                        <select id="s-pay" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100 outline-none"><option value="Pix">Pix</option><option value="Cartão">Cartão</option><option value="Dinheiro">Dinheiro</option></select>
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">Quantidade</label>
-                        <input type="number" id="s-qty" value="1" min="1" oninput="calcTotal()" class="w-full px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100 text-center font-bold">
-                    </div>
-                </div>
-                <div class="p-6 bg-vinho-light rounded-2xl flex justify-between items-center"><span class="text-xs font-bold text-vinho uppercase">Total</span><span id="s-total-view" class="text-3xl font-serif text-vinho font-bold">R$ 0,00</span></div>
-                <button type="submit" id="btn-submit-sale" class="w-full btn-primary py-5 rounded-2xl font-bold text-xl">Confirmar</button>
-                <button type="button" onclick="closeModal()" class="w-full text-gray-400 text-sm">Cancelar</button>
-            </form>
-        </div>
-
-        <div id="modal-product" class="modal-box hidden bg-white w-full max-w-lg rounded-[32px] p-10 shadow-2xl">
-            <h3 class="text-3xl font-serif text-vinho mb-8 italic">Gestão de Artigo</h3>
-            <form id="form-product" class="space-y-4">
-                <input type="hidden" id="p-row">
-                <input type="text" id="p-name" placeholder="Nome" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none">
-                <div class="grid grid-cols-2 gap-4">
-                    <input type="number" step="0.01" id="p-cost" placeholder="Custo R$" required class="px-6 py-4 bg-gray-50 rounded-2xl outline-none">
-                    <input type="number" step="0.01" id="p-price" placeholder="Venda R$" required class="px-6 py-4 bg-gray-50 rounded-2xl outline-none">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <input type="number" id="p-stock" placeholder="Estoque" required class="px-6 py-4 bg-gray-50 rounded-2xl outline-none">
-                    <input type="number" id="p-min" placeholder="Mínimo" value="3" class="px-6 py-4 bg-gray-50 rounded-2xl outline-none">
-                </div>
-                <button type="submit" class="w-full btn-primary py-5 rounded-2xl font-bold">Gravar</button>
-                <button type="button" onclick="closeModal()" class="w-full text-gray-400 text-sm">Voltar</button>
-            </form>
-        </div>
-
-        <div id="modal-customer" class="modal-box hidden bg-white w-full max-w-lg rounded-[32px] p-10 shadow-2xl">
-            <h3 class="text-3xl font-serif text-vinho mb-8 italic">Ficha Cliente</h3>
-            <form id="form-customer" class="space-y-4">
-                <input type="text" id="c-name" placeholder="Nome" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none">
-                <input type="text" id="c-phone" placeholder="WhatsApp" required class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none">
-                <input type="date" id="c-birth" class="w-full px-6 py-4 bg-gray-50 rounded-2xl outline-none">
-                <button type="submit" class="w-full btn-primary py-5 rounded-2xl font-bold">Salvar</button>
-                <button type="button" onclick="closeModal()" class="w-full text-gray-400 text-sm">Cancelar</button>
-            </form>
-        </div>
-    </div>
-
-    <div id="toast" class="fixed top-10 left-1/2 -translate-x-1/2 z-[130] opacity-0 transition-all duration-500 translate-y-[-100px]"><div id="toast-content" class="bg-vinho text-white px-8 py-3 rounded-full shadow-2xl font-medium text-sm">Processando...</div></div>
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxVXjw7pHV-37ttvxSwR4NF284dm5ARtIN-tojACIRHZqqOYLvMxN6fpSUMyVxuYoK8/exec";
-        let state = { products: [], customers: [], sales: [], users: [], currentUser: null };
+        let products = [];
+        let cart = [];
 
-        const parseCurrency = (v) => {
+        // Converte valores para número com segurança
+        const parseVal = (v) => {
             if (!v) return 0;
             if (typeof v === 'number') return v;
             let c = String(v).replace(/R\$/g, '').replace(/\s/g, '');
@@ -177,220 +116,166 @@
             return parseFloat(c) || 0;
         };
 
-        const formatCurrency = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseCurrency(v));
+        const formatPrice = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseVal(v));
 
-        const fetchData = async () => {
-            const icon = document.getElementById('sync-icon');
-            if(icon) icon.classList.add('syncing');
+        // Carregar dados da Planilha
+        async function loadProducts() {
             try {
                 const res = await fetch(SCRIPT_URL + "?action=read");
                 const data = await res.json();
-                state = { ...state, ...data };
-                renderAll();
-            } catch (e) { console.error(e); }
-            if(icon) icon.classList.remove('syncing');
-        };
-
-        const postData = async (payload) => {
-            showToast("Sincronizando...");
-            try {
-                await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-                showToast("Sucesso!");
-                setTimeout(fetchData, 1800);
-            } catch (e) { showToast("Erro!"); }
-        };
-
-        const showTab = (id) => {
-            document.querySelectorAll('.tab-view').forEach(v => v.classList.add('hidden'));
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            document.getElementById(`view-${id}`).classList.remove('hidden');
-            document.getElementById(`tab-${id}`).classList.add('active');
-            lucide.createIcons();
-        };
-
-        const openModal = (id) => {
-            document.getElementById('modal-container').classList.remove('hidden');
-            document.querySelectorAll('.modal-box').forEach(b => b.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-            if(id === 'modal-sale') updateSaleSelects();
-        };
-
-        const closeModal = () => document.getElementById('modal-container').classList.add('hidden');
-
-        const updateSaleSelects = () => {
-            document.getElementById('s-prod').innerHTML = '<option value="">Produto...</option>' + state.products.map((p, i) => `<option value="${i}">${p.name} (${formatCurrency(p.price)})</option>`).join('');
-            document.getElementById('s-cust').innerHTML = '<option value="">Ocasional</option>' + state.customers.map((c, i) => `<option value="${i}">${c.name}</option>`).join('');
-        };
-
-        const calcTotal = () => {
-            const pIdx = document.getElementById('s-prod').value;
-            const qty = document.getElementById('s-qty').value;
-            const total = (pIdx !== "" && state.products[pIdx]) ? parseCurrency(state.products[pIdx].price) * Number(qty) : 0;
-            document.getElementById('s-total-view').innerText = formatCurrency(total);
-        };
-
-        document.getElementById('form-sale').onsubmit = async (e) => {
-            e.preventDefault();
-            const pIdx = document.getElementById('s-prod').value;
-            const btn = document.getElementById('btn-submit-sale');
-            if (pIdx === "") return;
-            const prod = state.products[pIdx];
-            const qty = parseInt(document.getElementById('s-qty').value);
-            if(parseCurrency(prod.stock) < qty) return alert("Estoque insuficiente!");
-            
-            btn.disabled = true;
-            const total = parseCurrency(prod.price) * qty;
-            const profit = (parseCurrency(prod.price) - parseCurrency(prod.cost)) * qty;
-            const data = [new Date().toLocaleString('pt-BR'), prod.name, document.getElementById('s-cust').value !== "" ? state.customers[document.getElementById('s-cust').value].name : "Ocasional", document.getElementById('s-pay').value, total, profit, ""];
-            
-            // Nota: body.row é passado, mas o script precisaria tratar para editar em vez de append.
-            const row = document.getElementById('s-row').value;
-            await postData({ action: 'addSale', data: data, productIndex: pIdx, qty: qty, row: row ? parseInt(row) : null });
-            
-            btn.disabled = false;
-            closeModal();
-            e.target.reset();
-        };
-
-        window.openSaleModal = (idx = null) => {
-            const form = document.getElementById('form-sale');
-            form.reset();
-            // Guardar a linha original da planilha (idx é do array filtrado/reverso)
-            const realIdx = state.sales.length - 1 - idx; 
-            document.getElementById('s-row').value = idx !== null ? realIdx + 2 : "";
-            
-            if(idx !== null) {
-                const s = [...state.sales].reverse()[idx];
-                // Localizar produto e cliente pelos nomes (lógica de fallback)
-                const pIdx = state.products.findIndex(p => p.name === s.product);
-                const cIdx = state.customers.findIndex(c => c.name === s.customer);
-                
-                updateSaleSelects();
-                document.getElementById('s-prod').value = pIdx !== -1 ? pIdx : "";
-                document.getElementById('s-cust').value = cIdx !== -1 ? cIdx : "";
-                document.getElementById('s-pay').value = s.payment;
-                document.getElementById('s-qty').value = 1; // Quantidade não é salva na aba Vendas no script atual
-                calcTotal();
+                products = data.products || [];
+                renderCatalog();
+            } catch (e) {
+                console.error("Erro ao carregar:", e);
+                document.getElementById('catalog-grid').innerHTML = '<p class="col-span-2 text-center py-10 text-gray-400 italic">Erro ao carregar produtos.</p>';
             }
-            openModal('modal-sale');
-        };
-
-        window.openProductModal = (idx = null) => {
-            const form = document.getElementById('form-product');
-            form.reset();
-            document.getElementById('p-row').value = idx !== null ? idx + 2 : "";
-            if(idx !== null) {
-                const p = state.products[idx];
-                document.getElementById('p-name').value = p.name;
-                document.getElementById('p-cost').value = parseCurrency(p.cost);
-                document.getElementById('p-price').value = parseCurrency(p.price);
-                document.getElementById('p-stock').value = parseCurrency(p.stock);
-                document.getElementById('p-min').value = parseCurrency(p.minStock);
-            }
-            openModal('modal-product');
-        };
-
-        document.getElementById('form-product').onsubmit = async (e) => {
-            e.preventDefault();
-            const row = document.getElementById('p-row').value;
-            const data = [document.getElementById('p-name').value, parseFloat(document.getElementById('p-cost').value || 0), parseFloat(document.getElementById('p-price').value || 0), parseInt(document.getElementById('p-stock').value || 0), parseInt(document.getElementById('p-min').value || 0)];
-            await postData({ action: 'addProduct', data: data, row: row ? parseInt(row) : null });
-            closeModal();
-            e.target.reset();
-        };
-
-        document.getElementById('form-customer').onsubmit = async (e) => {
-            e.preventDefault();
-            await postData({ action: 'addCustomer', data: [document.getElementById('c-name').value, document.getElementById('c-phone').value, document.getElementById('c-birth').value] });
-            closeModal();
-            e.target.reset();
-        };
-
-        const renderAll = () => {
-            document.getElementById('dash-rev').innerText = formatCurrency(state.sales.reduce((a, b) => a + parseCurrency(b.total), 0));
-            document.getElementById('dash-profit').innerText = formatCurrency(state.sales.reduce((a, b) => a + parseCurrency(b.profit), 0));
-            document.getElementById('dash-low').innerText = state.products.filter(p => parseCurrency(p.stock) <= parseCurrency(p.minStock)).length;
-            
-            const pays = { Pix: 0, Cartão: 0, Dinheiro: 0 };
-            state.sales.forEach(s => pays[s.payment] = (pays[s.payment] || 0) + parseCurrency(s.total));
-            document.getElementById('payment-stats').innerHTML = Object.entries(pays).map(([k,v]) => `<div class="flex justify-between items-center p-4 rounded-2xl bg-gray-50 border border-gray-100"><span class="text-xs font-bold text-gray-400 uppercase tracking-widest">${k}</span><span class="font-serif italic text-vinho font-bold text-lg">${formatCurrency(v)}</span></div>`).join('');
-            
-            const month = new Date().getMonth();
-            document.getElementById('bday-list').innerHTML = state.customers.filter(c => c.birth && new Date(c.birth).getUTCMonth() === month).map(c => `<div class="flex justify-between items-center p-4 bg-vinho-light rounded-2xl"><span class="text-sm font-semibold text-gray-700 font-serif italic">${c.name}</span><a href="https://wa.me/${c.phone.replace(/\D/g,'')}" target="_blank" class="px-5 py-2 bg-vinho text-white rounded-full text-[10px] font-bold shadow-lg hover:scale-105 transition-transform">WhatsApp</a></div>`).join('') || '<p class="text-center text-gray-300 italic text-sm">Nenhum.</p>';
-            
-            document.getElementById('inv-list').innerHTML = state.products.map((p, i) => `<tr class="hover:bg-gray-50/50"><td class="px-8 py-5 font-bold text-gray-700 text-sm">${p.name}</td><td class="px-8 py-5 text-gray-400 text-xs font-mono">${formatCurrency(p.cost)}</td><td class="px-8 py-5 font-serif italic text-vinho">${formatCurrency(p.price)}</td><td class="px-8 py-5 text-center ${parseCurrency(p.stock) <= parseCurrency(p.minStock) ? 'text-red-500 font-bold' : 'text-gray-500'}">${p.stock}</td><td class="px-8 py-5 text-right flex justify-end gap-3"><button onclick="openProductModal(${i})" class="text-gray-200 hover:text-vinho"><i data-lucide="edit-3" class="w-4 h-4"></i></button><button onclick="deleteRow('Estoque', ${i+1})" class="text-gray-100 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td></tr>`).join('');
-            
-            document.getElementById('cust-list').innerHTML = state.customers.map((c, i) => `<tr><td class="px-8 py-5 font-bold text-sm text-gray-700">${c.name}</td><td class="px-8 py-5 text-xs text-vinho font-bold uppercase tracking-widest">${c.phone}</td><td class="px-8 py-5 text-right"><button onclick="deleteRow('Clientes', ${i+1})" class="text-gray-100 hover:text-red-500"><i data-lucide="user-minus" class="w-4 h-4"></i></button></td></tr>`).join('');
-            
-            document.getElementById('sale-history').innerHTML = [...state.sales].reverse().map((s, i) => `
-                <tr class="group hover:bg-vinho-light/30 transition-colors">
-                    <td class="px-8 py-5 text-[10px] text-gray-300 font-mono">${s.date}</td>
-                    <td class="px-8 py-5 text-sm font-bold text-gray-800">${s.product}</td>
-                    <td class="px-8 py-4 text-xs text-gray-400 font-bold">${s.customer}</td>
-                    <td class="px-8 py-5 text-center font-serif italic text-vinho text-lg font-bold">${formatCurrency(s.total)}</td>
-                    <td class="px-8 py-5 text-right flex justify-end gap-3">
-                        <button onclick="openSaleModal(${i})" class="text-gray-200 hover:text-vinho"><i data-lucide="edit" class="w-4 h-4"></i></button>
-                        <button onclick="deleteRow('Vendas', ${state.sales.length - i})" class="text-gray-100 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                    </td>
-                </tr>
-            `).join('');
-            
-            lucide.createIcons();
-        };
-
-        document.getElementById('login-form').onsubmit = async (e) => {
-            e.preventDefault();
-            const login = document.getElementById('auth-user').value.trim();
-            const pass = document.getElementById('auth-pass').value;
-            document.getElementById('login-loading').classList.remove('hidden');
-            try {
-                const res = await fetch(SCRIPT_URL + "?action=read");
-                const data = await res.json();
-                state = { ...state, ...data };
-                const valid = state.users.find(u => u.login === login && u.pass === pass);
-                if(valid || (login === "admin" && pass === "amora")) {
-                    state.currentUser = valid || { login: "admin", pass: "amora" };
-                    if(pass === "123456") {
-                        document.getElementById('auth-screen').classList.add('hidden');
-                        document.getElementById('password-change-screen').classList.remove('hidden');
-                    } else enterApp();
-                } else alert("Incorretas.");
-            } catch(e) { alert("Erro servidor."); }
-            document.getElementById('login-loading').classList.add('hidden');
-        };
-
-        document.getElementById('change-pass-form').onsubmit = async (e) => {
-            e.preventDefault();
-            const n1 = document.getElementById('new-pass').value;
-            if(n1 !== document.getElementById('confirm-pass').value) return alert("Erro.");
-            await postData({ action: 'updatePassword', row: state.users.findIndex(u => u.login === state.currentUser.login) + 2, newPassword: n1 });
-            document.getElementById('password-change-screen').classList.add('hidden');
-            enterApp();
-        };
-
-        function enterApp() {
-            document.getElementById('auth-screen').classList.add('hidden');
-            document.getElementById('app-content').classList.remove('hidden');
-            setTimeout(() => document.getElementById('app-content').classList.add('opacity-100'), 50);
-            renderAll();
         }
 
-        window.deleteRow = (sheet, row) => { if(confirm("Deseja eliminar este registo permanentemente?")) postData({ action: 'delete', sheet, row: row + (sheet === 'Vendas' ? 0 : 0) }); };
+        function renderCatalog() {
+            const grid = document.getElementById('catalog-grid');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            
+            // Filtra produtos que têm nome e batem com a busca
+            const filtered = products.filter(p => p.name && p.name.toLowerCase().includes(search));
 
-        const showToast = (msg) => {
-            const t = document.getElementById('toast');
-            document.getElementById('toast-content').innerText = msg;
-            t.classList.remove('opacity-0', 'translate-y-[-100px]');
-            t.classList.add('opacity-100', 'translate-y-0');
-            setTimeout(() => { t.classList.add('opacity-0', 'translate-y-[-100px]'); }, 3000);
+            if(filtered.length === 0) {
+                grid.innerHTML = '<p class="col-span-2 text-center py-20 text-gray-300 italic">Nenhum item encontrado.</p>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map((p, idx) => {
+                const stock = parseVal(p.stock);
+                const esgotado = stock <= 0;
+                // Imagem de exemplo elegante enquanto não há URLs na planilha
+                const img = "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=400&auto=format&fit=crop";
+
+                return `
+                    <div class="glass-card product-card flex flex-col relative ${esgotado ? 'out-of-stock' : ''}">
+                        ${esgotado ? '<div class="badge-esgotado">Esgotado</div>' : ''}
+                        <div class="aspect-[4/5] overflow-hidden rounded-t-[28px] bg-gray-50">
+                            <img src="${p.img || img}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="p-4 flex-1 flex flex-col justify-between">
+                            <div>
+                                <h4 class="text-[11px] font-bold text-gray-700 leading-tight mb-1 line-clamp-2 min-h-[32px] uppercase tracking-tighter">${p.name}</h4>
+                                <p class="text-lg font-serif italic text-[#611624] font-bold">${formatPrice(p.price)}</p>
+                            </div>
+                            ${!esgotado ? `
+                                <button onclick="addToCart('${p.name}')" class="mt-3 w-full bg-[#611624]/5 text-[#611624] py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest active:bg-[#611624] active:text-white transition-all">
+                                    Adicionar
+                                </button>
+                            ` : `
+                                <div class="mt-3 w-full text-center py-2.5 text-gray-300 text-[10px] font-bold uppercase border border-dashed border-gray-100 rounded-xl">
+                                    Indisponível
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function addToCart(name) {
+            const product = products.find(p => p.name === name);
+            const inCart = cart.find(i => i.name === name);
+            
+            const maxStock = parseVal(product.stock);
+            
+            if (inCart) {
+                if(inCart.qty < maxStock) inCart.qty++;
+                else return alert("Limite de stock atingido para este item!");
+            } else {
+                cart.push({ ...product, qty: 1 });
+            }
+            
+            updateCart();
+            showToast();
+        }
+
+        function updateCart() {
+            const count = cart.reduce((acc, i) => acc + i.qty, 0);
+            const total = cart.reduce((acc, i) => acc + (parseVal(i.price) * i.qty), 0);
+            
+            const badge = document.getElementById('cart-count');
+            badge.innerText = count;
+            badge.classList.toggle('hidden', count === 0);
+
+            const container = document.getElementById('cart-items');
+            if (cart.length === 0) {
+                container.innerHTML = `<div class="text-center py-20 text-gray-300 italic">Tua sacola está vazia...</div>`;
+            } else {
+                container.innerHTML = cart.map((item, idx) => `
+                    <div class="flex gap-4 items-center">
+                        <div class="flex-1">
+                            <h5 class="text-sm font-bold text-gray-800">${item.name}</h5>
+                            <p class="text-sm text-[#611624] font-serif italic">${formatPrice(item.price)}</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button onclick="changeQty(${idx}, -1)" class="w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center text-gray-400">-</button>
+                            <span class="text-sm font-bold w-4 text-center">${item.qty}</span>
+                            <button onclick="changeQty(${idx}, 1)" class="w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center text-gray-400">+</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('cart-total').innerText = formatPrice(total);
+        }
+
+        function changeQty(idx, delta) {
+            const item = cart[idx];
+            const product = products.find(p => p.name === item.name);
+            const maxStock = parseVal(product.stock);
+            
+            if (delta > 0 && item.qty >= maxStock) return;
+            
+            item.qty += delta;
+            if (item.qty <= 0) cart.splice(idx, 1);
+            updateCart();
+        }
+
+        function toggleCart() {
+            const overlay = document.getElementById('cart-overlay');
+            const drawer = document.getElementById('cart-drawer');
+            if (overlay.classList.contains('hidden')) {
+                overlay.classList.remove('hidden');
+                setTimeout(() => drawer.classList.remove('translate-y-full'), 10);
+            } else {
+                drawer.classList.add('translate-y-full');
+                setTimeout(() => overlay.classList.add('hidden'), 400);
+            }
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.remove('opacity-0', 'translate-y-10');
+            toast.classList.add('opacity-100', 'translate-y-0');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-10');
+                toast.classList.remove('opacity-100', 'translate-y-0');
+            }, 2000);
+        }
+
+        function sendOrder() {
+            if (cart.length === 0) return;
+            
+            let message = "*Novo Pedido - Amora Boutique*\n\n";
+            cart.forEach(item => {
+                message += `• ${item.qty}x ${item.name} (${formatPrice(item.price * item.qty)})\n`;
+            });
+            
+            const total = document.getElementById('cart-total').innerText;
+            message += `\n*Total Estimado: ${total}*\n\n_Olá! Gostaria de confirmar a disponibilidade destas peças._`;
+            
+            const phone = "5585999999999"; // ALTERA PARA O TEU NÚMERO
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+        }
+
+        window.onload = () => {
+            loadProducts();
+            lucide.createIcons();
         };
-
-        window.searchTable = (id, val) => {
-            const rows = document.getElementById(id).getElementsByTagName('tr');
-            for(let r of rows) r.style.display = r.innerText.toLowerCase().includes(val.toLowerCase()) ? '' : 'none';
-        };
-
-        window.onload = () => lucide.createIcons();
     </script>
 </body>
 </html>
