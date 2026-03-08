@@ -12,7 +12,6 @@
         body { font-family: 'Inter', sans-serif; background-color: #fdfbfc; color: #1a1a1a; -webkit-tap-highlight-color: transparent; }
         .font-serif { font-family: 'Playfair Display', serif; }
         
-        /* Animação do Coração no Logo */
         @keyframes heartBeat { 0%, 100% { transform: rotate(12deg) scale(1); } 50% { transform: rotate(12deg) scale(1.3); } }
         .logo-heart { 
             display: inline-block; width: 14px; height: 14px; background-color: currentColor; 
@@ -20,7 +19,6 @@
             margin-left: 2px; transform: rotate(12deg); animation: heartBeat 2s infinite; 
         }
 
-        /* Estilos de Cartões e UI */
         .glass-card { background: white; border: 1px solid rgba(97, 22, 36, 0.05); border-radius: 28px; transition: all 0.3s ease; }
         .product-card:active { transform: scale(0.98); }
         
@@ -31,11 +29,9 @@
             border-radius: 50px; font-size: 10px; font-weight: 800; text-transform: uppercase; z-index: 10;
         }
 
-        /* Drawer do Carrinho */
         #cart-drawer { transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); }
         .cart-open #cart-drawer { transform: translateY(0); }
         
-        /* Shimmer Loading */
         .shimmer {
             background: linear-gradient(90deg, #f6f7f8 25%, #edeef1 50%, #f6f7f8 75%);
             background-size: 200% 100%;
@@ -46,7 +42,6 @@
 </head>
 <body class="pb-20">
 
-    <!-- Navbar -->
     <nav class="sticky top-0 z-40 bg-white/90 backdrop-blur-lg border-b border-gray-50 px-6 py-4 flex justify-between items-center">
         <h1 class="text-3xl font-serif text-[#611624] italic">amora<span class="logo-heart"></span></h1>
         <button onclick="toggleCart()" class="relative p-2 text-[#611624]">
@@ -55,7 +50,6 @@
         </button>
     </nav>
 
-    <!-- Header & Procura -->
     <header class="px-6 py-8">
         <h2 class="text-4xl font-serif italic text-gray-800 leading-tight">Escolhas da <br><span class="text-[#611624]">Estação</span></h2>
         <div class="mt-6 relative">
@@ -65,14 +59,11 @@
         </div>
     </header>
 
-    <!-- Grelha de Produtos -->
     <main id="catalog-grid" class="px-6 grid grid-cols-2 gap-4">
-        <!-- Esqueleto de carregamento -->
         <div class="glass-card h-64 shimmer"></div>
         <div class="glass-card h-64 shimmer"></div>
     </main>
 
-    <!-- Gaveta do Carrinho -->
     <div id="cart-overlay" class="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm hidden" onclick="toggleCart()"></div>
     <div id="cart-drawer" class="fixed bottom-0 left-0 right-0 z-[110] bg-white rounded-t-[40px] shadow-2xl translate-y-full max-h-[85vh] flex flex-col">
         <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mt-4 mb-2"></div>
@@ -81,9 +72,7 @@
             <button onclick="toggleCart()" class="text-gray-400 p-2"><i data-lucide="x"></i></button>
         </div>
         
-        <div id="cart-items" class="flex-1 overflow-y-auto px-8 py-2 space-y-6">
-            <!-- Itens injetados via JS -->
-        </div>
+        <div id="cart-items" class="flex-1 overflow-y-auto px-8 py-2 space-y-6"></div>
 
         <div class="p-8 border-t border-gray-50 space-y-4">
             <div class="flex justify-between items-center text-lg font-serif">
@@ -96,7 +85,6 @@
         </div>
     </div>
 
-    <!-- Notificação de Toast -->
     <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[120] opacity-0 transition-all translate-y-10">
         <div class="bg-[#611624] text-white px-8 py-3 rounded-full shadow-2xl font-medium text-sm">Adicionado à sacola!</div>
     </div>
@@ -106,7 +94,6 @@
         let products = [];
         let cart = [];
 
-        // Converte valores para número com segurança
         const parseVal = (v) => {
             if (!v) return 0;
             if (typeof v === 'number') return v;
@@ -118,7 +105,6 @@
 
         const formatPrice = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseVal(v));
 
-        // Carregar dados da Planilha
         async function loadProducts() {
             try {
                 const res = await fetch(SCRIPT_URL + "?action=read");
@@ -135,7 +121,6 @@
             const grid = document.getElementById('catalog-grid');
             const search = document.getElementById('searchInput').value.toLowerCase();
             
-            // Filtra produtos que têm nome e batem com a busca
             const filtered = products.filter(p => p.name && p.name.toLowerCase().includes(search));
 
             if(filtered.length === 0) {
@@ -146,14 +131,15 @@
             grid.innerHTML = filtered.map((p, idx) => {
                 const stock = parseVal(p.stock);
                 const esgotado = stock <= 0;
-                // Imagem de exemplo elegante enquanto não há URLs na planilha
-                const img = "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=400&auto=format&fit=crop";
+                
+                // Puxa a imagem cadastrada (p.img) ou usa o placeholder caso não tenha foto
+                const imgSrc = (p.img && p.img.trim() !== "") ? p.img : "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=400&auto=format&fit=crop";
 
                 return `
                     <div class="glass-card product-card flex flex-col relative ${esgotado ? 'out-of-stock' : ''}">
                         ${esgotado ? '<div class="badge-esgotado">Esgotado</div>' : ''}
                         <div class="aspect-[4/5] overflow-hidden rounded-t-[28px] bg-gray-50">
-                            <img src="${p.img || img}" class="w-full h-full object-cover">
+                            <img src="${imgSrc}" class="w-full h-full object-cover">
                         </div>
                         <div class="p-4 flex-1 flex flex-col justify-between">
                             <div>
@@ -179,7 +165,6 @@
         function addToCart(name) {
             const product = products.find(p => p.name === name);
             const inCart = cart.find(i => i.name === name);
-            
             const maxStock = parseVal(product.stock);
             
             if (inCart) {
@@ -188,7 +173,6 @@
             } else {
                 cart.push({ ...product, qty: 1 });
             }
-            
             updateCart();
             showToast();
         }
@@ -205,21 +189,24 @@
             if (cart.length === 0) {
                 container.innerHTML = `<div class="text-center py-20 text-gray-300 italic">Tua sacola está vazia...</div>`;
             } else {
-                container.innerHTML = cart.map((item, idx) => `
-                    <div class="flex gap-4 items-center">
-                        <div class="flex-1">
-                            <h5 class="text-sm font-bold text-gray-800">${item.name}</h5>
-                            <p class="text-sm text-[#611624] font-serif italic">${formatPrice(item.price)}</p>
+                container.innerHTML = cart.map((item, idx) => {
+                    const imgSrc = (item.img && item.img.trim() !== "") ? item.img : "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=400&auto=format&fit=crop";
+                    return `
+                        <div class="flex gap-4 items-center">
+                            <img src="${imgSrc}" class="w-14 h-14 rounded-xl object-cover border border-gray-100">
+                            <div class="flex-1">
+                                <h5 class="text-sm font-bold text-gray-800">${item.name}</h5>
+                                <p class="text-sm text-[#611624] font-serif italic">${formatPrice(item.price)}</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <button onclick="changeQty(${idx}, -1)" class="w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center text-gray-400">-</button>
+                                <span class="text-sm font-bold w-4 text-center">${item.qty}</span>
+                                <button onclick="changeQty(${idx}, 1)" class="w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center text-gray-400">+</button>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <button onclick="changeQty(${idx}, -1)" class="w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center text-gray-400">-</button>
-                            <span class="text-sm font-bold w-4 text-center">${item.qty}</span>
-                            <button onclick="changeQty(${idx}, 1)" class="w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center text-gray-400">+</button>
-                        </div>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
             }
-
             document.getElementById('cart-total').innerText = formatPrice(total);
         }
 
@@ -259,16 +246,14 @@
 
         function sendOrder() {
             if (cart.length === 0) return;
-            
             let message = "*Novo Pedido - Amora Boutique*\n\n";
             cart.forEach(item => {
                 message += `• ${item.qty}x ${item.name} (${formatPrice(item.price * item.qty)})\n`;
             });
-            
             const total = document.getElementById('cart-total').innerText;
             message += `\n*Total Estimado: ${total}*\n\n_Olá! Gostaria de confirmar a disponibilidade destas peças._`;
             
-            const phone = "5585999999999"; // ALTERA PARA O TEU NÚMERO
+            const phone = "5585999999999"; 
             window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
         }
 
