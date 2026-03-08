@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Amora - Boutique Management</title>
+    
+        <!-- Configurações PWA -->
+        <link rel="manifest" href="manifest.json">
+        <meta name="theme-color" content="#611624">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2956/2956820.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
@@ -182,6 +190,18 @@
     <div id="toast" class="fixed top-10 left-1/2 -translate-x-1/2 z-[130] opacity-0 transition-all duration-500 translate-y-[-100px]"><div id="toast-content" class="bg-vinho text-white px-8 py-3 rounded-full shadow-2xl font-medium text-sm">Processando...</div></div>
 
     <script>
+
+        // Registro do Service Worker para o PWA
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').then(reg => {
+            console.log('PWA registrado com sucesso!');
+        }).catch(err => {
+            console.log('Falha ao registrar PWA: ', err);
+        });
+    });
+}
+        
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxVXjw7pHV-37ttvxSwR4NF284dm5ARtIN-tojACIRHZqqOYLvMxN6fpSUMyVxuYoK8/exec";
         let state = { products: [], customers: [], sales: [], users: [], currentUser: null };
         let currentBase64Img = ""; // Variável global para armazenar a imagem
