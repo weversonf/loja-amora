@@ -12,6 +12,7 @@
         body { font-family: 'Inter', sans-serif; background-color: #fdfbfc; color: #1a1a1a; -webkit-tap-highlight-color: transparent; }
         .font-serif { font-family: 'Playfair Display', serif; }
         
+        /* Animação do Coração no Logo */
         @keyframes heartBeat { 0%, 100% { transform: rotate(12deg) scale(1); } 50% { transform: rotate(12deg) scale(1.3); } }
         .logo-heart { 
             display: inline-block; width: 14px; height: 14px; background-color: currentColor; 
@@ -19,8 +20,10 @@
             margin-left: 2px; transform: rotate(12deg); animation: heartBeat 2s infinite; 
         }
 
+        /* Estilos de Cartões e UI */
         .glass-card { background: white; border: 1px solid rgba(97, 22, 36, 0.05); border-radius: 28px; transition: all 0.3s ease; }
         .product-card:active { transform: scale(0.98); }
+        .product-card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(97, 22, 36, 0.08); }
         
         .out-of-stock { filter: grayscale(0.8); opacity: 0.6; pointer-events: none; }
         .badge-esgotado {
@@ -29,9 +32,11 @@
             border-radius: 50px; font-size: 10px; font-weight: 800; text-transform: uppercase; z-index: 10;
         }
 
+        /* Drawer do Carrinho */
         #cart-drawer { transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); }
         .cart-open #cart-drawer { transform: translateY(0); }
         
+        /* Shimmer Loading */
         .shimmer {
             background: linear-gradient(90deg, #f6f7f8 25%, #edeef1 50%, #f6f7f8 75%);
             background-size: 200% 100%;
@@ -42,37 +47,48 @@
 </head>
 <body class="pb-20">
 
-    <nav class="sticky top-0 z-40 bg-white/90 backdrop-blur-lg border-b border-gray-50 px-6 py-4 flex justify-between items-center">
-        <h1 class="text-3xl font-serif text-[#611624] italic">amora<span class="logo-heart"></span></h1>
-        <button onclick="toggleCart()" class="relative p-2 text-[#611624]">
-            <i data-lucide="shopping-bag" class="w-7 h-7"></i>
-            <span id="cart-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
-        </button>
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-40 bg-white/90 backdrop-blur-lg border-b border-gray-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-3xl font-serif text-[#611624] italic">amora<span class="logo-heart"></span></h1>
+            <button onclick="toggleCart()" class="relative p-2 text-[#611624]">
+                <i data-lucide="shopping-bag" class="w-7 h-7"></i>
+                <span id="cart-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
+            </button>
+        </div>
     </nav>
 
-    <header class="px-6 py-8">
+    <!-- Header & Procura -->
+    <header class="max-w-7xl mx-auto px-6 py-8">
         <h2 class="text-4xl font-serif italic text-gray-800 leading-tight">Escolhas da <br><span class="text-[#611624]">Estação</span></h2>
-        <div class="mt-6 relative">
+        <div class="mt-6 relative max-w-2xl">
             <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
             <input type="text" id="searchInput" oninput="renderCatalog()" placeholder="O que procuras?" 
                    class="w-full pl-12 pr-6 py-4 bg-white border border-gray-100 rounded-2xl shadow-sm outline-none focus:ring-2 focus:ring-[#611624]/10">
         </div>
     </header>
 
-    <main id="catalog-grid" class="px-6 grid grid-cols-2 gap-4">
-        <div class="glass-card h-64 shimmer"></div>
-        <div class="glass-card h-64 shimmer"></div>
+    <!-- Grelha de Produtos (2 mobile, 4 desktop) -->
+    <main id="catalog-grid" class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+        <!-- Esqueleto de carregamento -->
+        <div class="glass-card h-64 md:h-80 shimmer"></div>
+        <div class="glass-card h-64 md:h-80 shimmer"></div>
+        <div class="glass-card h-80 shimmer hidden md:block"></div>
+        <div class="glass-card h-80 shimmer hidden md:block"></div>
     </main>
 
+    <!-- Gaveta do Carrinho -->
     <div id="cart-overlay" class="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm hidden" onclick="toggleCart()"></div>
-    <div id="cart-drawer" class="fixed bottom-0 left-0 right-0 z-[110] bg-white rounded-t-[40px] shadow-2xl translate-y-full max-h-[85vh] flex flex-col">
+    <div id="cart-drawer" class="fixed bottom-0 left-0 right-0 z-[110] bg-white rounded-t-[40px] shadow-2xl translate-y-full max-h-[85vh] flex flex-col md:w-[450px] md:mx-auto md:rounded-t-[24px]">
         <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mt-4 mb-2"></div>
         <div class="px-8 py-6 flex justify-between items-center">
             <h3 class="text-2xl font-serif italic text-[#611624]">Tua Sacola</h3>
             <button onclick="toggleCart()" class="text-gray-400 p-2"><i data-lucide="x"></i></button>
         </div>
         
-        <div id="cart-items" class="flex-1 overflow-y-auto px-8 py-2 space-y-6"></div>
+        <div id="cart-items" class="flex-1 overflow-y-auto px-8 py-2 space-y-6">
+            <!-- Itens injetados via JS -->
+        </div>
 
         <div class="p-8 border-t border-gray-50 space-y-4">
             <div class="flex justify-between items-center text-lg font-serif">
@@ -85,6 +101,7 @@
         </div>
     </div>
 
+    <!-- Notificação de Toast -->
     <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[120] opacity-0 transition-all translate-y-10">
         <div class="bg-[#611624] text-white px-8 py-3 rounded-full shadow-2xl font-medium text-sm">Adicionado à sacola!</div>
     </div>
@@ -94,6 +111,7 @@
         let products = [];
         let cart = [];
 
+        // Converte valores para número com segurança
         const parseVal = (v) => {
             if (!v) return 0;
             if (typeof v === 'number') return v;
@@ -105,6 +123,7 @@
 
         const formatPrice = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseVal(v));
 
+        // Carregar dados da Planilha
         async function loadProducts() {
             try {
                 const res = await fetch(SCRIPT_URL + "?action=read");
@@ -113,7 +132,7 @@
                 renderCatalog();
             } catch (e) {
                 console.error("Erro ao carregar:", e);
-                document.getElementById('catalog-grid').innerHTML = '<p class="col-span-2 text-center py-10 text-gray-400 italic">Erro ao carregar produtos.</p>';
+                document.getElementById('catalog-grid').innerHTML = '<p class="col-span-2 md:col-span-4 text-center py-10 text-gray-400 italic">Erro ao carregar produtos.</p>';
             }
         }
 
@@ -121,10 +140,11 @@
             const grid = document.getElementById('catalog-grid');
             const search = document.getElementById('searchInput').value.toLowerCase();
             
+            // Filtra produtos que têm nome e batem com a busca
             const filtered = products.filter(p => p.name && p.name.toLowerCase().includes(search));
 
             if(filtered.length === 0) {
-                grid.innerHTML = '<p class="col-span-2 text-center py-20 text-gray-300 italic">Nenhum item encontrado.</p>';
+                grid.innerHTML = '<p class="col-span-2 md:col-span-4 text-center py-20 text-gray-300 italic">Nenhum item encontrado.</p>';
                 return;
             }
 
@@ -147,7 +167,7 @@
                                 <p class="text-lg font-serif italic text-[#611624] font-bold">${formatPrice(p.price)}</p>
                             </div>
                             ${!esgotado ? `
-                                <button onclick="addToCart('${p.name}')" class="mt-3 w-full bg-[#611624]/5 text-[#611624] py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest active:bg-[#611624] active:text-white transition-all">
+                                <button onclick="addToCart('${p.name}')" class="mt-3 w-full bg-[#611624]/5 text-[#611624] py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest active:bg-[#611624] hover:bg-[#611624] hover:text-white active:text-white transition-all">
                                     Adicionar
                                 </button>
                             ` : `
